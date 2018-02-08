@@ -2,7 +2,7 @@ module-name:
     jgi_metagenomics
 
 module-description:
-    A KBase module
+    The JGI metagenome QC and assembly pipeline
 
 service-language:
     python
