@@ -17,7 +17,7 @@ except:
     from baseclient import BaseClient as _BaseClient  # @Reimport
 
 
-class jgi_metagenomics(object):
+class jgi_mg_assembly(object):
 
     def __init__(
             self, url=None, timeout=30 * 60, user_id=None,
@@ -37,7 +37,7 @@ class jgi_metagenomics(object):
         """
         The actual function is declared using 'funcdef' to specify the name
         and input/return arguments to the function.  For all typical KBase
-        Apps that run in the Narrative, your function should have the 
+        Apps that run in the Narrative, your function should have the
         'authentication required' modifier.
         :param params: instance of type "FilterContigsParams" (A 'typedef'
            can also be used to define compound or container objects, like
@@ -71,9 +71,9 @@ class jgi_metagenomics(object):
            Long, parameter "n_contigs_remaining" of Long
         """
         return self._client.call_method(
-            'jgi_metagenomics.filter_contigs',
+            'jgi_mg_assembly.filter_contigs',
             [params], self._service_ver, context)
 
     def status(self, context=None):
-        return self._client.call_method('jgi_metagenomics.status',
+        return self._client.call_method('jgi_mg_assembly.status',
                                         [], self._service_ver, context)

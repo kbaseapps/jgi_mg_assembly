@@ -1,7 +1,7 @@
-SERVICE = jgi_metagenomics
-SERVICE_CAPS = jgi_metagenomics
-SPEC_FILE = jgi_metagenomics.spec
-URL = https://kbase.us/services/jgi_metagenomics
+SERVICE = jgi_mg_assembly
+SERVICE_CAPS = jgi_mg_assembly
+SPEC_FILE = jgi_mg_assembly.spec
+URL = https://kbase.us/services/jgi_mg_assembly
 DIR = $(shell pwd)
 LIB_DIR = lib
 SCRIPTS_DIR = scripts

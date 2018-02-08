@@ -9,13 +9,13 @@ from KBaseReport.KBaseReportClient import KBaseReport
 #END_HEADER
 
 
-class jgi_metagenomics:
+class jgi_mg_assembly:
     '''
     Module Name:
-    jgi_metagenomics
+    jgi_mg_assembly
 
     Module Description:
-    A KBase module: jgi_metagenomics
+    A KBase module: jgi_mg_assembly
 This sample module contains one small method - filter_contigs.
     '''
 
@@ -37,7 +37,7 @@ This sample module contains one small method - filter_contigs.
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
-        
+
         # Any configuration parameters that are important should be parsed and
         # saved in the constructor.
         self.callback_url = os.environ['SDK_CALLBACK_URL']
@@ -51,7 +51,7 @@ This sample module contains one small method - filter_contigs.
         """
         The actual function is declared using 'funcdef' to specify the name
         and input/return arguments to the function.  For all typical KBase
-        Apps that run in the Narrative, your function should have the 
+        Apps that run in the Narrative, your function should have the
         'authentication required' modifier.
         :param params: instance of type "FilterContigsParams" (A 'typedef'
            can also be used to define compound or container objects, like
@@ -166,7 +166,7 @@ This sample module contains one small method - filter_contigs.
                   'n_contigs_remaining': n_remaining
                   }
         print('returning:' + pformat(output))
-                
+
         #END filter_contigs
 
         # At some point might do deeper type checking...

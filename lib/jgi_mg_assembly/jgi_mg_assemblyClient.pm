@@ -1,4 +1,4 @@
-package jgi_metagenomics::jgi_metagenomicsClient;
+package jgi_mg_assembly::jgi_mg_assemblyClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -21,12 +21,12 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-jgi_metagenomics::jgi_metagenomicsClient
+jgi_mg_assembly::jgi_mg_assemblyClient
 
 =head1 DESCRIPTION
 
 
-A KBase module: jgi_metagenomics
+A KBase module: jgi_mg_assembly
 This sample module contains one small method - filter_contigs.
 
 
@@ -38,7 +38,7 @@ sub new
     
 
     my $self = {
-	client => jgi_metagenomics::jgi_metagenomicsClient::RpcClient->new,
+	client => jgi_mg_assembly::jgi_mg_assemblyClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -120,17 +120,17 @@ sub new
 =begin html
 
 <pre>
-$params is a jgi_metagenomics.FilterContigsParams
-$output is a jgi_metagenomics.FilterContigsResults
+$params is a jgi_mg_assembly.FilterContigsParams
+$output is a jgi_mg_assembly.FilterContigsResults
 FilterContigsParams is a reference to a hash where the following keys are defined:
-	assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+	assembly_input_ref has a value which is a jgi_mg_assembly.assembly_ref
 	workspace_name has a value which is a string
 	min_length has a value which is an int
 assembly_ref is a string
 FilterContigsResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_metagenomics.assembly_ref
+	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 	n_initial_contigs has a value which is an int
 	n_contigs_removed has a value which is an int
 	n_contigs_remaining has a value which is an int
@@ -141,17 +141,17 @@ FilterContigsResults is a reference to a hash where the following keys are defin
 
 =begin text
 
-$params is a jgi_metagenomics.FilterContigsParams
-$output is a jgi_metagenomics.FilterContigsResults
+$params is a jgi_mg_assembly.FilterContigsParams
+$output is a jgi_mg_assembly.FilterContigsResults
 FilterContigsParams is a reference to a hash where the following keys are defined:
-	assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+	assembly_input_ref has a value which is a jgi_mg_assembly.assembly_ref
 	workspace_name has a value which is a string
 	min_length has a value which is an int
 assembly_ref is a string
 FilterContigsResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_metagenomics.assembly_ref
+	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 	n_initial_contigs has a value which is an int
 	n_contigs_removed has a value which is an int
 	n_contigs_remaining has a value which is an int
@@ -163,7 +163,7 @@ FilterContigsResults is a reference to a hash where the following keys are defin
 
 The actual function is declared using 'funcdef' to specify the name
 and input/return arguments to the function.  For all typical KBase
-Apps that run in the Narrative, your function should have the 
+Apps that run in the Narrative, your function should have the
 'authentication required' modifier.
 
 =back
@@ -195,7 +195,7 @@ Apps that run in the Narrative, your function should have the
 
     my $url = $self->{url};
     my $result = $self->{client}->call($url, $self->{headers}, {
-	    method => "jgi_metagenomics.filter_contigs",
+	    method => "jgi_mg_assembly.filter_contigs",
 	    params => \@args,
     });
     if ($result) {
@@ -226,7 +226,7 @@ sub status
     }
     my $url = $self->{url};
     my $result = $self->{client}->call($url, $self->{headers}, {
-        method => "jgi_metagenomics.status",
+        method => "jgi_mg_assembly.status",
         params => \@args,
     });
     if ($result) {
@@ -251,7 +251,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "jgi_metagenomics.version",
+        method => "jgi_mg_assembly.version",
         params => [],
     });
     if ($result) {
@@ -294,10 +294,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for jgi_metagenomics::jgi_metagenomicsClient\n";
+        warn "New client version available for jgi_mg_assembly::jgi_mg_assemblyClient\n";
     }
     if ($sMajor == 0) {
-        warn "jgi_metagenomics::jgi_metagenomicsClient version is $svr_version. API subject to change.\n";
+        warn "jgi_mg_assembly::jgi_mg_assemblyClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -368,7 +368,7 @@ to indicate the type contained in the list or map.  For example:
 
 <pre>
 a reference to a hash where the following keys are defined:
-assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+assembly_input_ref has a value which is a jgi_mg_assembly.assembly_ref
 workspace_name has a value which is a string
 min_length has a value which is an int
 
@@ -379,7 +379,7 @@ min_length has a value which is an int
 =begin text
 
 a reference to a hash where the following keys are defined:
-assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+assembly_input_ref has a value which is a jgi_mg_assembly.assembly_ref
 workspace_name has a value which is a string
 min_length has a value which is an int
 
@@ -413,7 +413,7 @@ render your Report.
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_metagenomics.assembly_ref
+assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 n_initial_contigs has a value which is an int
 n_contigs_removed has a value which is an int
 n_contigs_remaining has a value which is an int
@@ -427,7 +427,7 @@ n_contigs_remaining has a value which is an int
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_metagenomics.assembly_ref
+assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 n_initial_contigs has a value which is an int
 n_contigs_removed has a value which is an int
 n_contigs_remaining has a value which is an int
@@ -441,7 +441,7 @@ n_contigs_remaining has a value which is an int
 
 =cut
 
-package jgi_metagenomics::jgi_metagenomicsClient::RpcClient;
+package jgi_mg_assembly::jgi_mg_assemblyClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

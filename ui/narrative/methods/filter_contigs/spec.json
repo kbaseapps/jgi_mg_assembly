@@ -37,7 +37,7 @@
     "behavior": {
         "service-mapping": {
             "url": "",
-            "name":"jgi_metagenomics",
+            "name":"jgi_mg_assembly",
             "method": "filter_contigs",
             "input_mapping": [
                 {

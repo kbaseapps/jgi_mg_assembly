@@ -1,4 +1,4 @@
-package us.kbase.jgimetagenomics;
+package us.kbase.jgimgassembly;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.File;
@@ -14,13 +14,13 @@ import us.kbase.common.service.RpcContext;
 import us.kbase.common.service.UnauthorizedException;
 
 /**
- * <p>Original spec-file module name: jgi_metagenomics</p>
+ * <p>Original spec-file module name: jgi_mg_assembly</p>
  * <pre>
- * A KBase module: jgi_metagenomics
+ * A KBase module: jgi_mg_assembly
  * This sample module contains one small method - filter_contigs.
  * </pre>
  */
-public class JgiMetagenomicsClient {
+public class JgiMgAssemblyClient {
     private JsonClientCaller caller;
     private String serviceVersion = null;
 
@@ -28,7 +28,7 @@ public class JgiMetagenomicsClient {
     /** Constructs a client with a custom URL and no user credentials.
      * @param url the URL of the service.
      */
-    public JgiMetagenomicsClient(URL url) {
+    public JgiMgAssemblyClient(URL url) {
         caller = new JsonClientCaller(url);
     }
     /** Constructs a client with a custom URL.
@@ -38,7 +38,7 @@ public class JgiMetagenomicsClient {
      * @throws IOException if an IOException occurs when checking the token's
      * validity.
      */
-    public JgiMetagenomicsClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+    public JgiMgAssemblyClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, token);
     }
 
@@ -50,7 +50,7 @@ public class JgiMetagenomicsClient {
      * @throws IOException if an IOException occurs when checking the user's
      * credentials.
      */
-    public JgiMetagenomicsClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+    public JgiMgAssemblyClient(URL url, String user, String password) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, user, password);
     }
 
@@ -64,7 +64,7 @@ public class JgiMetagenomicsClient {
      * @throws IOException if an IOException occurs when checking the user's
      * credentials.
      */
-    public JgiMetagenomicsClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+    public JgiMgAssemblyClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, user, password, auth);
     }
 
@@ -168,11 +168,11 @@ public class JgiMetagenomicsClient {
      * <pre>
      * The actual function is declared using 'funcdef' to specify the name
      * and input/return arguments to the function.  For all typical KBase
-     * Apps that run in the Narrative, your function should have the 
+     * Apps that run in the Narrative, your function should have the
      * 'authentication required' modifier.
      * </pre>
-     * @param   params   instance of type {@link us.kbase.jgimetagenomics.FilterContigsParams FilterContigsParams}
-     * @return   parameter "output" of type {@link us.kbase.jgimetagenomics.FilterContigsResults FilterContigsResults}
+     * @param   params   instance of type {@link us.kbase.jgimgassembly.FilterContigsParams FilterContigsParams}
+     * @return   parameter "output" of type {@link us.kbase.jgimgassembly.FilterContigsResults FilterContigsResults}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
@@ -180,14 +180,14 @@ public class JgiMetagenomicsClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<FilterContigsResults>> retType = new TypeReference<List<FilterContigsResults>>() {};
-        List<FilterContigsResults> res = caller.jsonrpcCall("jgi_metagenomics.filter_contigs", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        List<FilterContigsResults> res = caller.jsonrpcCall("jgi_mg_assembly.filter_contigs", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
-        List<Map<String, Object>> res = caller.jsonrpcCall("jgi_metagenomics.status", args, retType, true, false, jsonRpcContext, this.serviceVersion);
+        List<Map<String, Object>> res = caller.jsonrpcCall("jgi_mg_assembly.status", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 }

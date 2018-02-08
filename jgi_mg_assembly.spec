@@ -1,10 +1,10 @@
 /*
-A KBase module: jgi_metagenomics
+A KBase module: jgi_mg_assembly
 This sample module contains one small method - filter_contigs.
 */
 
-module jgi_metagenomics {
-    /* 
+module jgi_mg_assembly {
+    /*
         A 'typedef' allows you to provide a more specific name for
         a type.  Built-in primitive types include 'string', 'int',
         'float'.  Here we define a type named assembly_ref to indicate
@@ -49,11 +49,11 @@ module jgi_metagenomics {
         int n_contigs_removed;
         int n_contigs_remaining;
     } FilterContigsResults;
-    
+
     /*
         The actual function is declared using 'funcdef' to specify the name
         and input/return arguments to the function.  For all typical KBase
-        Apps that run in the Narrative, your function should have the 
+        Apps that run in the Narrative, your function should have the
         'authentication required' modifier.
     */
     funcdef filter_contigs(FilterContigsParams params)

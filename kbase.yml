@@ -1,5 +1,5 @@
 module-name:
-    jgi_metagenomics
+    jgi_mg_assembly
 
 module-description:
     The JGI metagenome QC and assembly pipeline
