@@ -2,7 +2,7 @@ module-name:
     jgi_mg_assembly
 
 module-description:
-    The JGI metagenome QC and assembly pipeline
+    The JGI metagenome QC and assembly pipeline.
 
 service-language:
     python
@@ -12,4 +12,3 @@ module-version:
 
 owners:
     [wjriehl]
-

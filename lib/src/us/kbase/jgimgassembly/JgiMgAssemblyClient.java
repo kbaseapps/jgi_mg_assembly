@@ -17,7 +17,6 @@ import us.kbase.common.service.UnauthorizedException;
  * <p>Original spec-file module name: jgi_mg_assembly</p>
  * <pre>
  * A KBase module: jgi_mg_assembly
- * This sample module contains one small method - filter_contigs.
  * </pre>
  */
 public class JgiMgAssemblyClient {
@@ -164,23 +163,19 @@ public class JgiMgAssemblyClient {
     }
 
     /**
-     * <p>Original spec-file function name: filter_contigs</p>
+     * <p>Original spec-file function name: run_mg_assembly_pipeline</p>
      * <pre>
-     * The actual function is declared using 'funcdef' to specify the name
-     * and input/return arguments to the function.  For all typical KBase
-     * Apps that run in the Narrative, your function should have the
-     * 'authentication required' modifier.
      * </pre>
-     * @param   params   instance of type {@link us.kbase.jgimgassembly.FilterContigsParams FilterContigsParams}
-     * @return   parameter "output" of type {@link us.kbase.jgimgassembly.FilterContigsResults FilterContigsResults}
+     * @param   params   instance of type {@link us.kbase.jgimgassembly.AssemblyPipelineParams AssemblyPipelineParams}
+     * @return   parameter "results" of type {@link us.kbase.jgimgassembly.AssemblyPipelineResults AssemblyPipelineResults}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public FilterContigsResults filterContigs(FilterContigsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public AssemblyPipelineResults runMgAssemblyPipeline(AssemblyPipelineParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
-        TypeReference<List<FilterContigsResults>> retType = new TypeReference<List<FilterContigsResults>>() {};
-        List<FilterContigsResults> res = caller.jsonrpcCall("jgi_mg_assembly.filter_contigs", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        TypeReference<List<AssemblyPipelineResults>> retType = new TypeReference<List<AssemblyPipelineResults>>() {};
+        List<AssemblyPipelineResults> res = caller.jsonrpcCall("jgi_mg_assembly.run_mg_assembly_pipeline", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

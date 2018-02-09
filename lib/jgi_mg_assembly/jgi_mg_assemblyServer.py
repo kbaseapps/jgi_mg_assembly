@@ -333,10 +333,10 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_jgi_mg_assembly.filter_contigs,
-                             name='jgi_mg_assembly.filter_contigs',
+        self.rpc_service.add(impl_jgi_mg_assembly.run_mg_assembly_pipeline,
+                             name='jgi_mg_assembly.run_mg_assembly_pipeline',
                              types=[dict])
-        self.method_authentication['jgi_mg_assembly.filter_contigs'] = 'required'  # noqa
+        self.method_authentication['jgi_mg_assembly.run_mg_assembly_pipeline'] = 'required'  # noqa
         self.rpc_service.add(impl_jgi_mg_assembly.status,
                              name='jgi_mg_assembly.status',
                              types=[dict])
