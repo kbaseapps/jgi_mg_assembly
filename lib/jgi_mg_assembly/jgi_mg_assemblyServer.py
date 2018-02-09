@@ -16,7 +16,7 @@ from biokbase import log
 import requests as _requests
 import random as _random
 import os
-from jgi_metagenomics.authclient import KBaseAuth as _KBaseAuth
+from jgi_mg_assembly.authclient import KBaseAuth as _KBaseAuth
 
 DEPLOY = 'KB_DEPLOYMENT_CONFIG'
 SERVICE = 'KB_SERVICE_NAME'
@@ -39,14 +39,14 @@ def get_config():
     retconfig = {}
     config = ConfigParser()
     config.read(get_config_file())
-    for nameval in config.items(get_service_name() or 'jgi_metagenomics'):
+    for nameval in config.items(get_service_name() or 'jgi_mg_assembly'):
         retconfig[nameval[0]] = nameval[1]
     return retconfig
 
 config = get_config()
 
-from jgi_metagenomics.jgi_metagenomicsImpl import jgi_metagenomics  # noqa @IgnorePep8
-impl_jgi_metagenomics = jgi_metagenomics(config)
+from jgi_mg_assembly.jgi_mg_assemblyImpl import jgi_mg_assembly  # noqa @IgnorePep8
+impl_jgi_mg_assembly = jgi_mg_assembly(config)
 
 
 class JSONObjectEncoder(json.JSONEncoder):
@@ -322,7 +322,7 @@ class Application(object):
                                    context['method'], context['call_id'])
 
     def __init__(self):
-        submod = get_service_name() or 'jgi_metagenomics'
+        submod = get_service_name() or 'jgi_mg_assembly'
         self.userlog = log.log(
             submod, ip_address=True, authuser=True, module=True, method=True,
             call_id=True, changecallback=self.logcallback,
@@ -333,12 +333,12 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_jgi_metagenomics.filter_contigs,
-                             name='jgi_metagenomics.filter_contigs',
+        self.rpc_service.add(impl_jgi_mg_assembly.run_mg_assembly_pipeline,
+                             name='jgi_mg_assembly.run_mg_assembly_pipeline',
                              types=[dict])
-        self.method_authentication['jgi_metagenomics.filter_contigs'] = 'required'  # noqa
-        self.rpc_service.add(impl_jgi_metagenomics.status,
-                             name='jgi_metagenomics.status',
+        self.method_authentication['jgi_mg_assembly.run_mg_assembly_pipeline'] = 'required'  # noqa
+        self.rpc_service.add(impl_jgi_mg_assembly.status,
+                             name='jgi_mg_assembly.status',
                              types=[dict])
         authurl = config.get(AUTH) if config else None
         self.auth_client = _KBaseAuth(authurl)
@@ -393,7 +393,7 @@ class Application(object):
                             err = JSONServerError()
                             err.data = (
                                 'Authentication required for ' +
-                                'jgi_metagenomics ' +
+                                'jgi_mg_assembly ' +
                                 'but no authentication header was passed')
                             raise err
                         elif token is None and auth_req == 'optional':

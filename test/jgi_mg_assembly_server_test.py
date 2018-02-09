@@ -14,13 +14,13 @@ except:
 from pprint import pprint  # noqa: F401
 
 from biokbase.workspace.client import Workspace as workspaceService
-from jgi_metagenomics.jgi_metagenomicsImpl import jgi_metagenomics
-from jgi_metagenomics.jgi_metagenomicsServer import MethodContext
-from jgi_metagenomics.authclient import KBaseAuth as _KBaseAuth
+from jgi_mg_assembly.jgi_mg_assemblyImpl import jgi_mg_assembly
+from jgi_mg_assembly.jgi_mg_assemblyServer import MethodContext
+from jgi_mg_assembly.authclient import KBaseAuth as _KBaseAuth
 
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 
-class jgi_metagenomicsTest(unittest.TestCase):
+class jgi_mg_assemblyTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -29,7 +29,7 @@ class jgi_metagenomicsTest(unittest.TestCase):
         cls.cfg = {}
         config = ConfigParser()
         config.read(config_file)
-        for nameval in config.items('jgi_metagenomics'):
+        for nameval in config.items('jgi_mg_assembly'):
             cls.cfg[nameval[0]] = nameval[1]
         # Getting username from Auth profile for token
         authServiceUrl = cls.cfg['auth-service-url']
@@ -41,14 +41,14 @@ class jgi_metagenomicsTest(unittest.TestCase):
         cls.ctx.update({'token': token,
                         'user_id': user_id,
                         'provenance': [
-                            {'service': 'jgi_metagenomics',
+                            {'service': 'jgi_mg_assembly',
                              'method': 'please_never_use_it_in_production',
                              'method_params': []
                              }],
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
         cls.wsClient = workspaceService(cls.wsURL)
-        cls.serviceImpl = jgi_metagenomics(cls.cfg)
+        cls.serviceImpl = jgi_mg_assembly(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
@@ -65,7 +65,7 @@ class jgi_metagenomicsTest(unittest.TestCase):
         if hasattr(self.__class__, 'wsName'):
             return self.__class__.wsName
         suffix = int(time.time() * 1000)
-        wsName = "test_jgi_metagenomics_" + str(suffix)
+        wsName = "test_jgi_mg_assembly_" + str(suffix)
         ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
         self.__class__.wsName = wsName
         return wsName

@@ -1,4 +1,4 @@
-package jgi_metagenomics::jgi_metagenomicsClient;
+package jgi_mg_assembly::jgi_mg_assemblyClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -21,13 +21,12 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-jgi_metagenomics::jgi_metagenomicsClient
+jgi_mg_assembly::jgi_mg_assemblyClient
 
 =head1 DESCRIPTION
 
 
-A KBase module: jgi_metagenomics
-This sample module contains one small method - filter_contigs.
+A KBase module: jgi_mg_assembly
 
 
 =cut
@@ -38,7 +37,7 @@ sub new
     
 
     my $self = {
-	client => jgi_metagenomics::jgi_metagenomicsClient::RpcClient->new,
+	client => jgi_mg_assembly::jgi_mg_assemblyClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -109,9 +108,9 @@ sub new
 
 
 
-=head2 filter_contigs
+=head2 run_mg_assembly_pipeline
 
-  $output = $obj->filter_contigs($params)
+  $results = $obj->run_mg_assembly_pipeline($params)
 
 =over 4
 
@@ -120,20 +119,18 @@ sub new
 =begin html
 
 <pre>
-$params is a jgi_metagenomics.FilterContigsParams
-$output is a jgi_metagenomics.FilterContigsResults
-FilterContigsParams is a reference to a hash where the following keys are defined:
-	assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+$params is a jgi_mg_assembly.AssemblyPipelineParams
+$results is a jgi_mg_assembly.AssemblyPipelineResults
+AssemblyPipelineParams is a reference to a hash where the following keys are defined:
+	reads_ref has a value which is a jgi_mg_assembly.reads_ref
 	workspace_name has a value which is a string
-	min_length has a value which is an int
-assembly_ref is a string
-FilterContigsResults is a reference to a hash where the following keys are defined:
+	assembly_name has a value which is a string
+reads_ref is a string
+AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_metagenomics.assembly_ref
-	n_initial_contigs has a value which is an int
-	n_contigs_removed has a value which is an int
-	n_contigs_remaining has a value which is an int
+	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
+assembly_ref is a string
 
 </pre>
 
@@ -141,36 +138,31 @@ FilterContigsResults is a reference to a hash where the following keys are defin
 
 =begin text
 
-$params is a jgi_metagenomics.FilterContigsParams
-$output is a jgi_metagenomics.FilterContigsResults
-FilterContigsParams is a reference to a hash where the following keys are defined:
-	assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+$params is a jgi_mg_assembly.AssemblyPipelineParams
+$results is a jgi_mg_assembly.AssemblyPipelineResults
+AssemblyPipelineParams is a reference to a hash where the following keys are defined:
+	reads_ref has a value which is a jgi_mg_assembly.reads_ref
 	workspace_name has a value which is a string
-	min_length has a value which is an int
-assembly_ref is a string
-FilterContigsResults is a reference to a hash where the following keys are defined:
+	assembly_name has a value which is a string
+reads_ref is a string
+AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_metagenomics.assembly_ref
-	n_initial_contigs has a value which is an int
-	n_contigs_removed has a value which is an int
-	n_contigs_remaining has a value which is an int
+	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
+assembly_ref is a string
 
 
 =end text
 
 =item Description
 
-The actual function is declared using 'funcdef' to specify the name
-and input/return arguments to the function.  For all typical KBase
-Apps that run in the Narrative, your function should have the 
-'authentication required' modifier.
+
 
 =back
 
 =cut
 
- sub filter_contigs
+ sub run_mg_assembly_pipeline
 {
     my($self, @args) = @_;
 
@@ -179,7 +171,7 @@ Apps that run in the Narrative, your function should have the
     if ((my $n = @args) != 1)
     {
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function filter_contigs (received $n, expecting 1)");
+							       "Invalid argument count for function run_mg_assembly_pipeline (received $n, expecting 1)");
     }
     {
 	my($params) = @args;
@@ -187,31 +179,31 @@ Apps that run in the Narrative, your function should have the
 	my @_bad_arguments;
         (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
         if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to filter_contigs:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    my $msg = "Invalid arguments passed to run_mg_assembly_pipeline:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'filter_contigs');
+								   method_name => 'run_mg_assembly_pipeline');
 	}
     }
 
     my $url = $self->{url};
     my $result = $self->{client}->call($url, $self->{headers}, {
-	    method => "jgi_metagenomics.filter_contigs",
+	    method => "jgi_mg_assembly.run_mg_assembly_pipeline",
 	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
 					       code => $result->content->{error}->{code},
-					       method_name => 'filter_contigs',
+					       method_name => 'run_mg_assembly_pipeline',
 					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
 	}
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method filter_contigs",
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_mg_assembly_pipeline",
 					    status_line => $self->{client}->status_line,
-					    method_name => 'filter_contigs',
+					    method_name => 'run_mg_assembly_pipeline',
 				       );
     }
 }
@@ -226,7 +218,7 @@ sub status
     }
     my $url = $self->{url};
     my $result = $self->{client}->call($url, $self->{headers}, {
-        method => "jgi_metagenomics.status",
+        method => "jgi_mg_assembly.status",
         params => \@args,
     });
     if ($result) {
@@ -251,7 +243,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "jgi_metagenomics.version",
+        method => "jgi_mg_assembly.version",
         params => [],
     });
     if ($result) {
@@ -259,16 +251,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'filter_contigs',
+                method_name => 'run_mg_assembly_pipeline',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method filter_contigs",
+            error => "Error invoking method run_mg_assembly_pipeline",
             status_line => $self->{client}->status_line,
-            method_name => 'filter_contigs',
+            method_name => 'run_mg_assembly_pipeline',
         );
     }
 }
@@ -294,10 +286,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for jgi_metagenomics::jgi_metagenomicsClient\n";
+        warn "New client version available for jgi_mg_assembly::jgi_mg_assemblyClient\n";
     }
     if ($sMajor == 0) {
-        warn "jgi_metagenomics::jgi_metagenomicsClient version is $svr_version. API subject to change.\n";
+        warn "jgi_mg_assembly::jgi_mg_assemblyClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -311,13 +303,35 @@ sub _validate_version {
 
 
 
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 reads_ref
+
+=over 4
+
+
+
 =item Description
 
-A 'typedef' allows you to provide a more specific name for
-a type.  Built-in primitive types include 'string', 'int',
-'float'.  Here we define a type named assembly_ref to indicate
-a string that should be set to a KBase ID reference to an
-Assembly data object.
+Should be only Paired-end reads.
 
 
 =item Definition
@@ -340,26 +354,10 @@ a string
 
 
 
-=head2 FilterContigsParams
+=head2 AssemblyPipelineParams
 
 =over 4
 
-
-
-=item Description
-
-A 'typedef' can also be used to define compound or container
-objects, like lists, maps, and structures.  The standard KBase
-convention is to use structures, as shown here, to define the
-input and output of your function.  Here the input is a
-reference to the Assembly data object, a workspace to save
-output, and a length threshold for filtering.
-
-To define lists and maps, use a syntax similar to C++ templates
-to indicate the type contained in the list or map.  For example:
-
-    list <string> list_of_strings;
-    mapping <string, int> map_of_ints;
 
 
 =item Definition
@@ -368,9 +366,9 @@ to indicate the type contained in the list or map.  For example:
 
 <pre>
 a reference to a hash where the following keys are defined:
-assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+reads_ref has a value which is a jgi_mg_assembly.reads_ref
 workspace_name has a value which is a string
-min_length has a value which is an int
+assembly_name has a value which is a string
 
 </pre>
 
@@ -379,9 +377,9 @@ min_length has a value which is an int
 =begin text
 
 a reference to a hash where the following keys are defined:
-assembly_input_ref has a value which is a jgi_metagenomics.assembly_ref
+reads_ref has a value which is a jgi_mg_assembly.reads_ref
 workspace_name has a value which is a string
-min_length has a value which is an int
+assembly_name has a value which is a string
 
 
 =end text
@@ -390,19 +388,10 @@ min_length has a value which is an int
 
 
 
-=head2 FilterContigsResults
+=head2 AssemblyPipelineResults
 
 =over 4
 
-
-
-=item Description
-
-Here is the definition of the output of the function.  The output
-can be used by other SDK modules which call your code, or the output
-visualizations in the Narrative.  'report_name' and 'report_ref' are
-special output fields- if defined, the Narrative can automatically
-render your Report.
 
 
 =item Definition
@@ -413,10 +402,7 @@ render your Report.
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_metagenomics.assembly_ref
-n_initial_contigs has a value which is an int
-n_contigs_removed has a value which is an int
-n_contigs_remaining has a value which is an int
+assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 
 </pre>
 
@@ -427,10 +413,7 @@ n_contigs_remaining has a value which is an int
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_metagenomics.assembly_ref
-n_initial_contigs has a value which is an int
-n_contigs_removed has a value which is an int
-n_contigs_remaining has a value which is an int
+assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 
 
 =end text
@@ -441,7 +424,7 @@ n_contigs_remaining has a value which is an int
 
 =cut
 
-package jgi_metagenomics::jgi_metagenomicsClient::RpcClient;
+package jgi_mg_assembly::jgi_mg_assemblyClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

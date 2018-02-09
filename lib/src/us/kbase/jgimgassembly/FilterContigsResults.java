@@ -1,5 +1,5 @@
 
-package us.kbase.jgimetagenomics;
+package us.kbase.jgimgassembly;
 
 import java.util.HashMap;
 import java.util.Map;
