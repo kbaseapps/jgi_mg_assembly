@@ -1,6 +1,4 @@
-from jgi_mg_assembly.utils.file import (
-    fetch_reads_files
-)
+from jgi_mg_assembly.utils.file import FileUtil
 
 
 class Pipeline(object):
@@ -10,6 +8,7 @@ class Pipeline(object):
         """
         self.callback_url = callback_url
         self.scratch_dir = scratch_dir
+        self.file_util = FileUtil(callback_url)
 
     def run(self, params):
         """
@@ -18,14 +17,10 @@ class Pipeline(object):
         2. Run RQC filtering (might be external app or local method - see kbaseapps/BBTools repo)
         3. Run the Pipeline script as provided by JGI.
         """
-        errors = self._validate_params(params)
-        if errors is not None:
-            for error in errors:
-                print(error)
-            raise ValueError("Errors found in app parameters! See above for details.")
+        self._validate_params(params)
 
         # Fetch reads files
-        files = fetch_reads_files([params["reads_upa"]])
+        files = self.file_util.fetch_reads_files([params["reads_upa"]])
 
         rqc_output = self._run_rqc(files)
         pipeline_output = self._run_assembly_pipeline(rqc_output)
@@ -38,7 +33,18 @@ class Pipeline(object):
         }
 
     def _validate_params(self, params):
-        pass
+        """
+        Takes in params as passed to the main pipeline runner function and validates that
+        all the pieces are there correctly.
+        If anything tragic is missing, returns a list of error strings. If not, returns None.
+        """
+        errors = []
+
+        if len(errors):
+            for error in errors:
+                print(error)
+            raise ValueError("Errors found in app parameters! See above for details.")
+
 
     def _run_rqc(self, files):
         pass

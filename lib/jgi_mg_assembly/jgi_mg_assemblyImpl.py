@@ -47,7 +47,6 @@ class jgi_mg_assembly:
         #END_CONSTRUCTOR
         pass
 
-
     def run_mg_assembly_pipeline(self, ctx, params):
         """
         :param params: instance of type "AssemblyPipelineParams" ->
