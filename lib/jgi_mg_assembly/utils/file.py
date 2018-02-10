@@ -16,15 +16,18 @@ class FileUtil(object):
     def fetch_reads_files(self, reads_upas):
         """
         From a list of reads UPAs, uses ReadsUtils to fetch the reads as files.
-        Returns them as a list of dictionaries.
+        Returns them as a dictionary from reads_upa -> filename
         """
         ru = ReadsUtils(self.callback_url)
         reads_info = ru.download_reads(({
             'read_libraries': reads_upas,
             'interleaved': 'true',
             'gzipped': None
-        }))
-        return reads_info
+        }))['files']
+        file_set = dict()
+        for reads in reads_info:
+            file_set[reads] = reads_info[reads]['files']['fwd']
+        return file_set
 
     def save_assembly_files(self, file_paths):
         """

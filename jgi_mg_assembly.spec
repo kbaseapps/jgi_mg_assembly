@@ -12,7 +12,7 @@ module jgi_mg_assembly {
     typedef structure {
         reads_upa reads_upa;
         string workspace_name;
-        string assembly_name;
+        string output_assembly_name;
     } AssemblyPipelineParams;
 
     typedef structure {

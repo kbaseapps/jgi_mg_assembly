@@ -1,4 +1,5 @@
 from jgi_mg_assembly.utils.file import FileUtil
+from pprint import pprint
 
 
 class Pipeline(object):
@@ -36,21 +37,32 @@ class Pipeline(object):
         """
         Takes in params as passed to the main pipeline runner function and validates that
         all the pieces are there correctly.
-        If anything tragic is missing, returns a list of error strings. If not, returns None.
+        If anything tragic is missing, raises a ValueError with  a list of error strings.
+        If not, just returns happily.
         """
         errors = []
+        if "reads_upa" not in params:
+            errors.append("Missing a Reads object!")
+        if "output_assembly_name" not in params:
+            errors.append("Missing the output assembly name!")
 
         if len(errors):
             for error in errors:
                 print(error)
             raise ValueError("Errors found in app parameters! See above for details.")
 
-
     def _run_rqc(self, files):
-        pass
+        return {
 
-    def _run_assembly_pipeline(rqc_output):
-        pass
+        }
 
-    def _build_and_upload_report(rqc_output, pipeline_output):
-        pass
+    def _run_assembly_pipeline(self, rqc_output):
+        return {
+            "assembly_upa": "1/2/3"
+        }
+
+    def _build_and_upload_report(self, rqc_output, pipeline_output):
+        return {
+            "name": "MyNewReport",
+            "ref": "9/8/7"
+        }
