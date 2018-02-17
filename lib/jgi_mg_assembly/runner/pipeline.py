@@ -1,9 +1,19 @@
 from jgi_mg_assembly.utils.file import FileUtil
 from BBTools.BBToolsClient import BBTools
 from pprint import pprint
+import subprocess
+import uuid
+import os
+
+BFC = "bin/bfc"
+SEQTK = "bin/seqtk"
+SPADES = "/opt/SPAdes-3.11.1-Linux/bin/spades.py"
+BBTOOLS_STATS = "bbmap/stats.sh"
+BBMAP = "bbmap/bbmap.sh"
 
 
 class Pipeline(object):
+
     def __init__(self, callback_url, scratch_dir):
         """
         Initialize a few things. Starting points, paths, etc.
@@ -23,9 +33,8 @@ class Pipeline(object):
 
         # Fetch reads files
         files = self.file_util.fetch_reads_files([params["reads_upa"]])
+        pipeline_output = self._run_assembly_pipeline(files)
 
-        rqc_output = self._run_rqcfilter(files[params["reads_upa"]])
-        pipeline_output = self._run_assembly_pipeline(rqc_output)
         stored_objects = self._upload_pipeline_result(pipeline_output)
         report_info = self._build_and_upload_report(rqc_output, pipeline_output, stored_objects)
 
@@ -67,18 +76,103 @@ class Pipeline(object):
         })
         return result
 
-    def _run_assembly_pipeline(self, rqc_output):
+    def _run_assembly_pipeline(self, files):
         """
         Takes in the output from RQCFilter (the output directory and reads file as a dict) and
         runs the remaining steps in the JGI assembly pipeline.
         steps:
-        1. run bfc on output file from rqc filter with params -1 -s 10g -k 21 -t 10
+        0. run RQCfilter
+        1. run bfc on output file from rqc filter with params
+            -1 -s 10g -k 21 -t 10
         2. use seqtk to remove singleton reads
-        3. run spades on that output with params -m 2000 --only-assembler -k 33,55,77,99,127 --meta -t 32
+        3. run spades on that output with params
+            -m 2000 --only-assembler -k 33,55,77,99,127 --meta -t 32
         4. run bbmap to map the reads onto the assembly with params ambiguous=random
 
-        return the resulting file paths (just care about contigs file in v0, might use others for reporting)
+        return the resulting file paths (just care about contigs file in v0, might use others for
+        reporting)
         """
+        rqc_output = self._run_rqcfilter(files)
+        bfc_output = self._run_bfc_seqtk(rqc_output)
+        spades_output = self._run_spades(bfc_output)
+        bbmap_output = self._run_bbmap(spades_output)
+
+        return_dict = self._format_outputs(rqc_output, bfc_output, spades_output, bbmap_output)
+        return return_dict
+
+    def _run_bfc_seqtk(self, input_file):
+        """
+        Takes in an input file, returns path to output file.
+        """
+        # command:
+        # bfc <flag params> input_file['filtered_fastq_file']
+        bfc_output_file = os.path.join(self.scratch_dir, 'bfc_output.fastq')
+        zipped_output = os.path.join(self.scratch_dir, 'input.corr.fastq.gz')
+        bfc_cmd = [BFC, '-1', '-k 21']
+        if True:  # we're somewhere that can handle it...
+            bfc_cmd.append('-t 10 -s 10g')
+        bfc_cmd = bfc_cmd + [input_file['filtered_fastq_file'], '>', bfc_output_file]
+
+        p = subprocess.Popen(bfc_cmd, cwd=self.scratch_dir, shell=False)
+        retcode = p.wait()
+        if retcode != 0:
+            raise RuntimeError('Error while running BFC!')
+
+        # # next, pipe the output to seqtk and gzip
+        # seqtk_cmd = [SEQTK, 'dropse', bfc_output_file, '|', PIGZ, '-c', '-', '-p', '4', '-2' '>' zipped_output]
+        # p = subprocess.Popen(seqtk_cmd, cwd=self.scratch_dir, shell=False)
+        # retcode = p.wait()
+        # if p.returncode != 0:
+        #     raise RuntimeError('Error while running seqtk!')
+        #
+        return zipped_output
+
+    def _run_spades(self, input_file):
+        spades_output_dir = os.path.join(self.scratch_dir, 'spades_output_{}'.format(uuid.uuid4()))
+        spades_cmd = [SPADES, '--only-assembler', '-k', '33,55,77,99,127', '--meta', '-t', '32',
+                      '-m', '2000', '-o', spades_output_dir, '--12', input_file]
+        p = subprocess.Popen(spades_cmd, cwd=self.scratch_dir, shell=False)
+        retcode = p.wait()
+        if retcode != 0:
+            raise RuntimeError('Error while running SPAdes!')
+        return spades_output_dir
+
+    def _run_bbmap(self, scaffold_file, corrected_reads_file, contigs_file):
+        # 1. pre-step fungalrelease.sh (do we need this?)
+        # (see createAGPfile in jgi-mga templates)
+        #
+        # 2. make assembly stats.
+        stats_output = os.path.join(self.scratch_dir, 'stats.tsv')
+        sam_output = os.path.join(self.scratch_dir, 'pairedMapped.sam.gz')
+        coverage_stats_output = os.path.join(self.scratch_dir, 'covstats.txt')
+        stats_cmd = [BBTOOLS_STATS, 'format=6', 'in={}'.format(scaffold_file), '>', stats_output]
+        p = subprocess.Popen(stats_cmd, cwd=self.scratch_dir, shell=False)
+        retcode = p.wait()
+        if retcode != 0:
+            raise RuntimeError('Error while running BBTools stats.sh!')
+
+        # 3. do the mapping, make SAM file
+        bbmap_cmd = [
+            BBMAP,
+            'nodisk=true',
+            'interleaved=true',
+            'ambiguous=random',
+            'in={}'.format(corrected_reads_file),
+            'ref={}'.format(contigs_file),
+            'out={}'.format(sam_output),
+            'covstats={}'.format(coverage_stats_output)
+        ]
+        p = subprocess.Popen(bbmap_cmd, cwd=self.scratch_dir, shell=False)
+        retcode = p.wait()
+        if retcode != 0:
+            raise RuntimeError('Error while running BBMap!')
+        return {
+            'stats_file': stats_output,
+            'map_file': sam_output,
+            'coverage': coverage_stats_output
+        }
+
+    def _format_outputs(self, rqc_output, bfc_output, spades_output, bbmap_output):
         return {
             "scaffolds": "some_file",
             "contigs": "some_file",

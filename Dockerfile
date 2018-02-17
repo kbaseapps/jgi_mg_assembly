@@ -7,7 +7,8 @@ MAINTAINER KBase Developer
 # installation scripts.
 
 # update security libraries in the base image
-RUN apt-get -y update && apt-get install -y python-dev libffi-dev libssl-dev ca-certificates
+RUN apt-get -y update \
+    && apt-get install -y pigz python-dev libffi-dev libssl-dev ca-certificates
 RUN pip install cffi ndg-httpsclient pyopenssl==17.03 cryptography==2.0.3 --upgrade \
     && pip install pyasn1 --upgrade \
     && pip install requests --upgrade \
