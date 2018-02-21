@@ -4,7 +4,7 @@
         "wjriehl"
     ],
     "contact": "https://kbase.us/contact-us/",
-    "categories": ["active"],
+    "categories": ["active", "assembly", "communities"],
     "widgets": {
         "input": null,
         "output": "no-display"
