@@ -29,11 +29,17 @@ class FileUtil(object):
             file_set[reads] = reads_info[reads]['files']['fwd']
         return file_set
 
-    def save_assembly_files(self, file_paths):
+    def upload_assembly(self, file_path, workspace_name, assembly_name):
         """
         From a list of file paths, uploads them to KBase, generates Assembly objects,
         then returns the generated UPAs.
         """
         au = AssemblyUtil(self.callback_url)
-        assembly_upas = []
-        return assembly_upas
+        assembly_upa = au.save_assembly_from_fasta({
+            "file": {
+                "path": file_path
+            },
+            "workspace_name": workspace_name,
+            "assembly_name": assembly_name
+        })
+        return assembly_upa

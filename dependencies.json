@@ -1,0 +1,9 @@
+[ {
+  "module_name" : "BBTools",
+  "type" : "sdk",
+  "version_tag" : "dev"
+}, {
+  "module_name" : "DataFileUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+} ]
