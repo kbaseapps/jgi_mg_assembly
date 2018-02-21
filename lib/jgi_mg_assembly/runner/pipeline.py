@@ -121,11 +121,11 @@ class Pipeline(object):
         # bfc <flag params> input_file['filtered_fastq_file']
         bfc_output_file = os.path.join(self.scratch_dir, 'bfc_output.fastq')
         zipped_output = os.path.join(self.scratch_dir, 'input.corr.fastq.gz')
-        bfc_cmd = [BFC, '-1', '-k', '21']
+        bfc_cmd = [BFC, '-1', '-k', '21', '-t', '10']
 
         on_hpc = False
         if on_hpc:  # we're somewhere that can handle it...
-            bfc_cmd = bfc_cmd + ['-t', '10', '-s', '10g']
+            bfc_cmd = bfc_cmd + ['-s', '10g']
         bfc_cmd = bfc_cmd + [input_file['filtered_fastq_file'], '>', bfc_output_file]
 
         print("Running BFC with command:")
