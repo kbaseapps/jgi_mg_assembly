@@ -1,8 +1,9 @@
-from jgi_mg_assembly.utils.file import FileUtil
-from BBTools.BBToolsClient import BBTools
 import subprocess
 import uuid
 import os
+from BBTools.BBToolsClient import BBTools
+from jgi_mg_assembly.utils.file import FileUtil
+from jgi_mg_assembly.utils.report import ReportUtil
 
 BFC = "/kb/module/bin/bfc"
 SEQTK = "/kb/module/bin/seqtk"
@@ -41,11 +42,12 @@ class Pipeline(object):
         )
         print("upload complete")
         print(stored_objects)
-        report_info = self._build_and_upload_report(pipeline_output, stored_objects)
+        report_info = self._build_and_upload_report(pipeline_output, stored_objects,
+                                                    params['workspace_name'])
 
         return {
-            "report_name": report_info["name"],
-            "report_ref": report_info["ref"],
+            "report_name": report_info["report_name"],
+            "report_ref": report_info["report_ref"],
             "assembly_upa": stored_objects["assembly_upa"]
         }
 
@@ -232,8 +234,12 @@ class Pipeline(object):
             "assembly_upa": uploaded_upa
         }
 
-    def _build_and_upload_report(self, pipeline_output, saved_objects):
-        return {
-            "name": "MyNewReport",
-            "ref": "9/8/7"
-        }
+    def _build_and_upload_report(self, pipeline_output, output_objects, workspace_name):
+        report_util = ReportUtil(self.callback_url, self.scratch_dir)
+        stored_objects = list()
+        stored_objects.append({
+            "ref": output_objects["assembly_upa"],
+            "description": "Assembled with the JGI metagenome pipeline."
+        })
+        return report_util.make_report(pipeline_output['stats'], pipeline_output['coverage'],
+                                       workspace_name, stored_objects)
