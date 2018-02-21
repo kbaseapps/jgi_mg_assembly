@@ -47,6 +47,21 @@ class ReportUtil(object):
         return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
 
     def _write_html_file(self, html_file_name, stats_file, coverage_file):
+        html_head = """
+        <head>
+            <style>
+                td,th {
+                  border: 1px solid black;
+                  padding: 0.5em;
+                  text-align: left;
+                }
+
+                table {
+                  border-collapse: collapse;
+                }
+            </style>
+        </head>
+        """
         table = ""
         stats_data = list()
         with open(stats_file, "r") as f:
@@ -57,10 +72,10 @@ class ReportUtil(object):
             for line in lines:
                 stats_data.append(line.strip().split("\t"))
             for i in range(num_headers):
-                l = "<tr style='margin: 1em 2em; border: inherit'><th>{}</th><td>{}</td></tr>\n".format(headers[i], "</td><td>".join(stats_data[j][i] for j in range(len(stats_data))))
+                l = "<tr><th>{}</th><td>{}</td></tr>\n".format(headers[i], "</td><td>".join(stats_data[j][i] for j in range(len(stats_data))))
                 table = table + l
-        table = "<table style='border: 1px solid black; font-size: 14px'>\n{}</table>".format(table)
-        html_content = "<html>\n<body>\n{}\n</body></html>".format(table)
+        table = "<table>\n{}</table>".format(table)
+        html_content = "<html>\n{}<body>\n{}\n</body></html>".format(html_head, table)
         with open(html_file_name, "w") as outfile:
             outfile.write(html_content)
 
