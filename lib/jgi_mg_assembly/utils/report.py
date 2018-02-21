@@ -48,15 +48,18 @@ class ReportUtil(object):
 
     def _write_html_file(self, html_file_name, stats_file, coverage_file):
         table = ""
-        with open(stats_file, "r") as stats:
-            lines = stats.readlines()
-            head = lines.pop(0).strip().split("\t")
-            table = "<tr><th>{}</th></tr>".format("</th><th>".join(head))
+        stats_data = list()
+        with open(stats_file, "r") as f:
+            lines = f.readlines()
+            header = lines.pop(0)
+            headers = header.strip().split("\t")
+            num_headers = len(headers)
             for line in lines:
-                elems = "</td><td>".join(line.strip().split("\t"))
-                elems = "<tr><td>{}</td></tr>\n".format(elems)
-                table = table + elems
-        table = "<table>\n{}</table>".format(table)
+                stats_data.append(line.strip().split("\t"))
+            for i in range(num_headers):
+                l = "<tr style='margin: 1em 2em; border: inherit'><th>{}</th><td>{}</td></tr>\n".format(headers[i], "</td><td>".join(stats_data[j][i] for j in range(len(stats_data))))
+                table = table + l
+        table = "<table style='border: 1px solid black; font-size: 14px'>\n{}</table>".format(table)
         html_content = "<html>\n<body>\n{}\n</body></html>".format(table)
         with open(html_file_name, "w") as outfile:
             outfile.write(html_content)
