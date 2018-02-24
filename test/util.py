@@ -1,11 +1,13 @@
 import os  # noqa: F401
 import json  # noqa: F401
 import time
+import shutil
 try:
     from ConfigParser import ConfigParser  # py2
 except:
     from configparser import ConfigParser  # py3
 from Workspace.WorkspaceClient import Workspace
+from ReadsUtils.ReadsUtilsClient import ReadsUtils
 
 ws_name = None
 ws_id = None
@@ -50,9 +52,12 @@ def get_config():
 
 def tear_down_workspace():
     global ws_name
+    global ws_id
     if ws_name is not None:
         ws = get_ws_client()
         ws.delete_workspace({'workspace': ws_name})
+        ws_id = None
+        ws_name = None
 
 
 def _create_new_workspace():
@@ -64,3 +69,34 @@ def _create_new_workspace():
     ret = ws.create_workspace({'workspace': new_ws_name})
     ws_id = ret[0]
     ws_name = ret[1]
+
+
+def file_to_scratch(source_file, overwrite=False):
+    """
+    Copies a file to the scratch directory. By default, will raise an exception instead of
+    overwriting. set overwrite=True to override the overwrite protection.
+    """
+    scratch_dir = get_config()['scratch']
+    scratch_file_path = os.path.join(scratch_dir, os.path.basename(source_file))
+    if os.path.exists(scratch_file_path) and not overwrite:
+        raise ValueError("File exists already! Running this will overwrite it")
+    shutil.copy(source_file, scratch_file_path)
+    return scratch_file_path
+
+
+def load_pe_reads(fwd_file, rev_file):
+    """
+    Copies from given dir to scratch. Then calls ReadsUtils to upload from scratch.
+    """
+    callback_url = os.environ['SDK_CALLBACK_URL']
+    fwd_file_path = file_to_scratch(fwd_file, overwrite=True)
+    rev_file_path = file_to_scratch(rev_file, overwrite=True)
+    ru = ReadsUtils(callback_url)
+    pe_reads_params = {
+        'fwd_file': fwd_file_path,
+        'rev_file': rev_file_path,
+        'sequencing_tech': 'Illumina',
+        'wsname': get_ws_name(),
+        'name': 'MyPairedEndLibrary'
+    }
+    return ru.upload_reads(pe_reads_params)['obj_ref']

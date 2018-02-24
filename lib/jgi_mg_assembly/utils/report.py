@@ -23,7 +23,22 @@ class ReportUtil(object):
             "ref": upa,
             "description": some string
         }
+        Returns a dict with "report_ref" and "report_name" keys.
         """
+        if not stats_file:
+            raise ValueError("A stats file is required")
+        if not os.path.exists(stats_file):
+            raise ValueError("The stats file '{}' does not appear to exist".format(stats_file))
+        if not coverage_file:
+            raise ValueError("A coverage file is required")
+        if not os.path.exists(coverage_file):
+            raise ValueError("The coverage file '{}' does not appear to exist"
+                             .format(coverage_file))
+        if not workspace_name:
+            raise ValueError("A workspace name is required")
+        if not saved_objects:
+            saved_objects = list()
+
         html_report_dir = os.path.join(self.scratch_dir, "report_{}".format(uuid.uuid4()))
         self._mkdir_p(html_report_dir)
 
@@ -72,7 +87,10 @@ class ReportUtil(object):
             for line in lines:
                 stats_data.append(line.strip().split("\t"))
             for i in range(num_headers):
-                l = "<tr><th>{}</th><td>{}</td></tr>\n".format(headers[i], "</td><td>".join(stats_data[j][i] for j in range(len(stats_data))))
+                l = "<tr><th>{}</th><td>{}</td></tr>\n".format(
+                        headers[i],
+                        "</td><td>".join(stats_data[j][i] for j in range(len(stats_data)))
+                    )
                 table = table + l
         table = "<table>\n{}</table>".format(table)
         html_content = "<html>\n{}<body>\n{}\n</body></html>".format(html_head, table)
@@ -110,11 +128,11 @@ class ReportUtil(object):
 
     def _mkdir_p(self, path):
         if not path:
-            return
+            raise ValueError("A path is required")
         try:
             os.makedirs(path)
         except OSError as ex:
             if ex.errno == errno.EEXIST and os.path.isdir(path):
-                pass
+                pass  # it already exists, just return
             else:
-                raise
+                raise  # maybe permission error, maybe something else.
