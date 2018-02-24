@@ -59,10 +59,12 @@ class Pipeline(object):
         If not, just returns happily.
         """
         errors = []
-        if "reads_upa" not in params:
+        if params.get("reads_upa", None) is None:
             errors.append("Missing a Reads object!")
-        if "output_assembly_name" not in params:
+        if params.get("output_assembly_name", None) is None:
             errors.append("Missing the output assembly name!")
+        if params.get("workspace_name", None) is None:
+            errors.append("Missing workspace name for the output data!")
 
         if len(errors):
             for error in errors:
