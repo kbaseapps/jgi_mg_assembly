@@ -20,7 +20,7 @@
             "text_options": {
                 "valid_ws_types": [
                     "KBaseFile.PairedEndLibrary",
-                    "KBaseAssembly.PairedEndLibrary",
+                    "KBaseAssembly.PairedEndLibrary"
                 ]
             }
         },
