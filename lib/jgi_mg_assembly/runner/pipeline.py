@@ -91,14 +91,16 @@ class Pipeline(object):
         rqc_output = self._run_rqcfilter(files)
         bfc_output = self._run_bfc_seqtk(rqc_output)
         spades_output = self._run_spades(bfc_output)
-        agp_file_output = self._create_agp_file(spades_output)
+        agp_output = self._create_agp_file(spades_output)
         bbmap_output = self._run_bbmap(
-            os.path.join(spades_output, "scaffolds.fasta"),
+            agp_output["scaffolds"],
             bfc_output,
-            os.path.join(spades_output, "contigs.fasta")
+            agp_output["contigs"]
         )
 
-        return_dict = self._format_outputs(rqc_output, bfc_output, spades_output, bbmap_output)
+        return_dict = self._format_outputs(
+            rqc_output, bfc_output, spades_output, agp_output, bbmap_output
+        )
         return return_dict
 
     def _run_rqcfilter(self, reads_file):
@@ -140,7 +142,7 @@ class Pipeline(object):
             raise RuntimeError("Error while running BFC!")
         print("Done running BFC")
 
-        # next, pipe the output to seqtk and gzip
+        # next, pipe the output to seqtk and pigz
         seqtk_cmd = [SEQTK, "dropse", bfc_output_file, "|", PIGZ,
                      "-c", "-", "-p", "4", "-2", ">", zipped_output]
         p = subprocess.Popen(" ".join(seqtk_cmd), cwd=self.scratch_dir, shell=True)
@@ -168,6 +170,14 @@ class Pipeline(object):
         return spades_output_dir
 
     def _create_agp_file(self, spades_dir):
+        """
+        Runs bbmap/fungalrelease.sh to build AGP files and do some mapping and cleanup.
+        Returns a dictionary where values are paths to files and keys are the following:
+        scaffolds - mapped scaffolds fasta file
+        contigs - mapped contigs fasta file
+        agp - AGP file
+        legend - legend for generated scaffolds
+        """
         out_id = uuid.uuid4()
         out_scaffolds = os.path.join(self.scratch_dir, "assembly.scaffolds-{}.fasta".format(out_id))
         out_contigs = os.path.join(self.scratch_dir, "assembly.contigs-{}.fasta".format(out_id))
@@ -194,8 +204,12 @@ class Pipeline(object):
         if retcode != 0:
             raise RuntimeError("Error while creating AGP file!")
         print("Done creating AGP file")
-
-
+        return {
+            "scaffolds": out_scaffolds,
+            "contigs": out_contigs,
+            "agp": out_agp,
+            "legend": out_legend
+        }
 
     def _run_bbmap(self, scaffold_file, corrected_reads_file, contigs_file):
         """
@@ -243,18 +257,19 @@ class Pipeline(object):
             "coverage": coverage_stats_output
         }
 
-    def _format_outputs(self, rqc_output, bfc_output, spades_output, bbmap_output):
+    def _format_outputs(self, rqc_output, bfc_output, spades_output, agp_output, bbmap_output):
         """
         rqc_output = single file, qc / filtered reads
         bfc_output = single file, gzipped filtered reads
         spades_output = directory, with (needed files) contigs.fasta, scaffolds.fasta
+        agp_output = dict with keys->files for keys scaffolds, contigs, agp, and legend
         bbmap_output = dict with objects stats_file, map_file (SAM), and coverage.
 
         This reformats all of those into a single dict. Might do some other cleanup later.
         """
         return {
-            "scaffolds": os.path.join(spades_output, "scaffolds.fasta"),
-            "contigs": os.path.join(spades_output, "contigs.fasta"),
+            "scaffolds": agp_output["scaffolds"],  # os.path.join(spades_output, "scaffolds.fasta"),
+            "contigs": agp_output["contigs"],  # os.path.join(spades_output, "contigs.fasta"),
             "mapping": bbmap_output["map_file"],
             "coverage": bbmap_output["coverage"],
             "stats": bbmap_output["stats_file"]
