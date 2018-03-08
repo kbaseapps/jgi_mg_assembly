@@ -11,6 +11,7 @@ SPADES = "/opt/SPAdes-3.11.1-Linux/bin/spades.py"
 BBTOOLS_STATS = "/kb/module/bbmap/stats.sh"
 BBMAP = "/kb/module/bbmap/bbmap.sh"
 PIGZ = "pigz"
+AGP_FILE_TOOL = "/kb/module/bbmap/fungalrelease.sh"
 
 
 class Pipeline(object):
@@ -43,7 +44,7 @@ class Pipeline(object):
         print("upload complete")
         print(stored_objects)
         report_info = self._build_and_upload_report(pipeline_output, stored_objects,
-                                                    params['workspace_name'])
+                                                    params["workspace_name"])
 
         return {
             "report_name": report_info["report_name"],
@@ -90,6 +91,7 @@ class Pipeline(object):
         rqc_output = self._run_rqcfilter(files)
         bfc_output = self._run_bfc_seqtk(rqc_output)
         spades_output = self._run_spades(bfc_output)
+        agp_file_output = self._create_agp_file(spades_output)
         bbmap_output = self._run_bbmap(
             os.path.join(spades_output, "scaffolds.fasta"),
             bfc_output,
@@ -110,7 +112,7 @@ class Pipeline(object):
         print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
         bbtools = BBTools(self.callback_url)
         result = bbtools.run_RQCFilter_local({
-            'reads_file': reads_file
+            "reads_file": reads_file
         })
         print("Done running RQCFilter")
         return result
@@ -120,31 +122,31 @@ class Pipeline(object):
         Takes in an input file, returns path to output file.
         """
         # command:
-        # bfc <flag params> input_file['filtered_fastq_file']
-        bfc_output_file = os.path.join(self.scratch_dir, 'bfc_output.fastq')
-        zipped_output = os.path.join(self.scratch_dir, 'input.corr.fastq.gz')
-        bfc_cmd = [BFC, '-1', '-k', '21', '-t', '10']
+        # bfc <flag params> input_file["filtered_fastq_file"]
+        bfc_output_file = os.path.join(self.scratch_dir, "bfc_output.fastq")
+        zipped_output = os.path.join(self.scratch_dir, "input.corr.fastq.gz")
+        bfc_cmd = [BFC, "-1", "-k", "21", "-t", "10"]
 
         on_hpc = False
         if on_hpc:  # we're somewhere that can handle it...
-            bfc_cmd = bfc_cmd + ['-s', '10g']
-        bfc_cmd = bfc_cmd + [input_file['filtered_fastq_file'], '>', bfc_output_file]
+            bfc_cmd = bfc_cmd + ["-s", "10g"]
+        bfc_cmd = bfc_cmd + [input_file["filtered_fastq_file"], ">", bfc_output_file]
 
         print("Running BFC with command:")
         print(" ".join(bfc_cmd))
         p = subprocess.Popen(" ".join(bfc_cmd), cwd=self.scratch_dir, shell=True)
         retcode = p.wait()
         if retcode != 0:
-            raise RuntimeError('Error while running BFC!')
+            raise RuntimeError("Error while running BFC!")
         print("Done running BFC")
 
         # next, pipe the output to seqtk and gzip
-        seqtk_cmd = [SEQTK, 'dropse', bfc_output_file, '|', PIGZ,
-                     '-c', '-', '-p', '4', '-2', '>', zipped_output]
+        seqtk_cmd = [SEQTK, "dropse", bfc_output_file, "|", PIGZ,
+                     "-c", "-", "-p", "4", "-2", ">", zipped_output]
         p = subprocess.Popen(" ".join(seqtk_cmd), cwd=self.scratch_dir, shell=True)
         retcode = p.wait()
         if p.returncode != 0:
-            raise RuntimeError('Error while running seqtk!')
+            raise RuntimeError("Error while running seqtk!")
 
         return zipped_output
 
@@ -152,18 +154,48 @@ class Pipeline(object):
         """
         Runs spades, returns the generated output directory name. It's full of standard files.
         """
-        spades_output_dir = os.path.join(self.scratch_dir, 'spades_output_{}'.format(uuid.uuid4()))
-        spades_cmd = [SPADES, '--only-assembler', '-k', '33,55,77,99,127', '--meta', '-t', '32',
-                      '-m', '2000', '-o', spades_output_dir, '--12', input_file]
+        spades_output_dir = os.path.join(self.scratch_dir, "spades_output_{}".format(uuid.uuid4()))
+        spades_cmd = [SPADES, "--only-assembler", "-k", "33,55,77,99,127", "--meta", "-t", "32",
+                      "-m", "2000", "-o", spades_output_dir, "--12", input_file]
 
         print("Running SPAdes with command:")
         print(" ".join(spades_cmd))
         p = subprocess.Popen(spades_cmd, cwd=self.scratch_dir, shell=False)
         retcode = p.wait()
         if retcode != 0:
-            raise RuntimeError('Error while running SPAdes!')
+            raise RuntimeError("Error while running SPAdes!")
         print("Done running SPAdes")
         return spades_output_dir
+
+    def _create_agp_file(self, spades_dir):
+        out_id = uuid.uuid4()
+        out_scaffolds = os.path.join(self.scratch_dir, "assembly.scaffolds-{}.fasta".format(out_id))
+        out_contigs = os.path.join(self.scratch_dir, "assembly.contigs-{}.fasta".format(out_id))
+        out_agp = os.path.join(self.scratch_dir, "assembly-{}.agp".format(out_id))
+        out_legend = os.path.join(self.scratch_dir, "assembly.scaffolds-{}.legend".format(out_id))
+        agp_file_cmd = [
+            AGP_FILE_TOOL,
+            "-Xmx40g",
+            "in={}".format(os.path.join(spades_dir, "scaffolds.fasta")),
+            "out={}".format(out_scaffolds),
+            "outc={}".format(out_contigs),
+            "agp={}".format(out_agp),
+            "legend={}".format(out_legend),
+            "mincontig=200",
+            "minscaf=200",
+            "sortscaffolds=t",
+            "sortcontigs=t",
+            "overwrite=t"
+        ]
+        print("Creating AGP file with command:")
+        print(" ".join(agp_file_cmd))
+        p = subprocess.Popen(agp_file_cmd, cwd=self.scratch_dir, shell=False)
+        retcode = p.wait()
+        if retcode != 0:
+            raise RuntimeError("Error while creating AGP file!")
+        print("Done creating AGP file")
+
+
 
     def _run_bbmap(self, scaffold_file, corrected_reads_file, contigs_file):
         """
@@ -175,40 +207,40 @@ class Pipeline(object):
         # (see createAGPfile in jgi-mga templates)
         #
         # 2. make assembly stats.
-        stats_output = os.path.join(self.scratch_dir, 'stats.tsv')
-        sam_output = os.path.join(self.scratch_dir, 'pairedMapped.sam.gz')
-        coverage_stats_output = os.path.join(self.scratch_dir, 'covstats.txt')
-        stats_cmd = [BBTOOLS_STATS, 'format=6', 'in={}'.format(scaffold_file), '>', stats_output]
+        stats_output = os.path.join(self.scratch_dir, "stats.tsv")
+        sam_output = os.path.join(self.scratch_dir, "pairedMapped.sam.gz")
+        coverage_stats_output = os.path.join(self.scratch_dir, "covstats.txt")
+        stats_cmd = [BBTOOLS_STATS, "format=6", "in={}".format(scaffold_file), ">", stats_output]
         print("Running BBTools stats.sh with command:")
         print(" ".join(stats_cmd))
         p = subprocess.Popen(stats_cmd, cwd=self.scratch_dir, shell=False)
         retcode = p.wait()
         if retcode != 0:
-            raise RuntimeError('Error while running BBTools stats.sh!')
+            raise RuntimeError("Error while running BBTools stats.sh!")
         print("Done running BBTools stats.sh")
 
         # 3. do the mapping, make SAM file
         bbmap_cmd = [
             BBMAP,
-            'nodisk=true',
-            'interleaved=true',
-            'ambiguous=random',
-            'in={}'.format(corrected_reads_file),
-            'ref={}'.format(contigs_file),
-            'out={}'.format(sam_output),
-            'covstats={}'.format(coverage_stats_output)
+            "nodisk=true",
+            "interleaved=true",
+            "ambiguous=random",
+            "in={}".format(corrected_reads_file),
+            "ref={}".format(contigs_file),
+            "out={}".format(sam_output),
+            "covstats={}".format(coverage_stats_output)
         ]
         print("Running BBMap with command:")
         print(" ".join(bbmap_cmd))
         p = subprocess.Popen(bbmap_cmd, cwd=self.scratch_dir, shell=False)
         retcode = p.wait()
         if retcode != 0:
-            raise RuntimeError('Error while running BBMap!')
+            raise RuntimeError("Error while running BBMap!")
         print("Done running BBMap")
         return {
-            'stats_file': stats_output,
-            'map_file': sam_output,
-            'coverage': coverage_stats_output
+            "stats_file": stats_output,
+            "map_file": sam_output,
+            "coverage": coverage_stats_output
         }
 
     def _format_outputs(self, rqc_output, bfc_output, spades_output, bbmap_output):
@@ -223,14 +255,14 @@ class Pipeline(object):
         return {
             "scaffolds": os.path.join(spades_output, "scaffolds.fasta"),
             "contigs": os.path.join(spades_output, "contigs.fasta"),
-            "mapping": bbmap_output['map_file'],
-            "coverage": bbmap_output['coverage'],
-            "stats": bbmap_output['stats_file']
+            "mapping": bbmap_output["map_file"],
+            "coverage": bbmap_output["coverage"],
+            "stats": bbmap_output["stats_file"]
         }
 
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
         uploaded_upa = self.file_util.upload_assembly(
-            pipeline_result['contigs'], workspace_name, assembly_name
+            pipeline_result["contigs"], workspace_name, assembly_name
         )
         return {
             "assembly_upa": uploaded_upa
@@ -243,5 +275,5 @@ class Pipeline(object):
             "ref": output_objects["assembly_upa"],
             "description": "Assembled with the JGI metagenome pipeline."
         })
-        return report_util.make_report(pipeline_output['stats'], pipeline_output['coverage'],
+        return report_util.make_report(pipeline_output["stats"], pipeline_output["coverage"],
                                        workspace_name, stored_objects)
