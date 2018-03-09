@@ -2,12 +2,12 @@
 Used for making and uploading a KBaseReport for the MG assembly pipeline results.
 """
 import os
-import errno
 import uuid
 import shutil
 import zipfile
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from KBaseReport.KBaseReportClient import KBaseReport
+from util import mkdir
 
 
 class ReportUtil(object):
@@ -39,8 +39,8 @@ class ReportUtil(object):
         if not saved_objects:
             saved_objects = list()
 
-        html_report_dir = os.path.join(self.scratch_dir, "report_{}".format(uuid.uuid4()))
-        self._mkdir_p(html_report_dir)
+        html_report_dir = os.path.join(self.scratch_dir, "report")
+        mkdir(html_report_dir)
 
         stats_file_name = os.path.basename(stats_file)
         coverage_file_name = os.path.basename(coverage_file)
@@ -125,14 +125,3 @@ class ReportUtil(object):
             'report_ref': report['ref'],
             'report_name': report['name']
         }
-
-    def _mkdir_p(self, path):
-        if not path:
-            raise ValueError("A path is required")
-        try:
-            os.makedirs(path)
-        except OSError as ex:
-            if ex.errno == errno.EEXIST and os.path.isdir(path):
-                pass  # it already exists, just return
-            else:
-                raise  # maybe permission error, maybe something else.

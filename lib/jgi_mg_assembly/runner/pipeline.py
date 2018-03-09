@@ -1,9 +1,11 @@
 import subprocess
-import uuid
+import time
 import os
 from BBTools.BBToolsClient import BBTools
 from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.utils.report import ReportUtil
+from jgi_mg_assembly.utils.util import mkdir
+
 
 BFC = "/kb/module/bin/bfc"
 SEQTK = "/kb/module/bin/seqtk"
@@ -22,6 +24,9 @@ class Pipeline(object):
         """
         self.callback_url = callback_url
         self.scratch_dir = scratch_dir
+        self.timestamp = int(time.time() * 1000)
+        self.output_dir = os.path.join(self.scratch_dir, "jgi_mga_output_{}".format(self.timestamp))
+        mkdir(self.output_dir)
         self.file_util = FileUtil(callback_url)
 
     def run(self, params):
@@ -125,8 +130,9 @@ class Pipeline(object):
         """
         # command:
         # bfc <flag params> input_file["filtered_fastq_file"]
-        bfc_output_file = os.path.join(self.scratch_dir, "bfc_output.fastq")
-        zipped_output = os.path.join(self.scratch_dir, "input.corr.fastq.gz")
+        mkdir(os.path.join(self.output_dir, "bfc"))
+        bfc_output_file = os.path.join(self.output_dir, "bfc", "bfc_output.fastq")
+        zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")
         bfc_cmd = [BFC, "-1", "-k", "21", "-t", "10"]
 
         on_hpc = False
@@ -156,7 +162,8 @@ class Pipeline(object):
         """
         Runs spades, returns the generated output directory name. It's full of standard files.
         """
-        spades_output_dir = os.path.join(self.scratch_dir, "spades_output_{}".format(uuid.uuid4()))
+        spades_output_dir = os.path.join(self.output_dir, "spades3")
+        mkdir(spades_output_dir)
         spades_cmd = [SPADES, "--only-assembler", "-k", "33,55,77,99,127", "--meta", "-t", "32",
                       "-m", "2000", "-o", spades_output_dir, "--12", input_file]
 
@@ -178,11 +185,12 @@ class Pipeline(object):
         agp - AGP file
         legend - legend for generated scaffolds
         """
-        out_id = uuid.uuid4()
-        out_scaffolds = os.path.join(self.scratch_dir, "assembly.scaffolds-{}.fasta".format(out_id))
-        out_contigs = os.path.join(self.scratch_dir, "assembly.contigs-{}.fasta".format(out_id))
-        out_agp = os.path.join(self.scratch_dir, "assembly-{}.agp".format(out_id))
-        out_legend = os.path.join(self.scratch_dir, "assembly.scaffolds-{}.legend".format(out_id))
+        agp_dir = os.path.join(self.output_dir, "createAGPfile")
+        mkdir(agp_dir)
+        out_scaffolds = os.path.join(agp_dir, "assembly.scaffolds.fasta")
+        out_contigs = os.path.join(agp_dir, "assembly.contigs.fasta")
+        out_agp = os.path.join(agp_dir, "assembly.agp")
+        out_legend = os.path.join(agp_dir, "assembly.scaffolds.legend")
         agp_file_cmd = [
             AGP_FILE_TOOL,
             "-Xmx40g",
@@ -221,9 +229,11 @@ class Pipeline(object):
         # (see createAGPfile in jgi-mga templates)
         #
         # 2. make assembly stats.
-        stats_output = os.path.join(self.scratch_dir, "stats.tsv")
-        sam_output = os.path.join(self.scratch_dir, "pairedMapped.sam.gz")
-        coverage_stats_output = os.path.join(self.scratch_dir, "covstats.txt")
+        bbmap_output_dir = os.path.join(self.output_dir, "readMappingPairs")
+        mkdir(bbmap_output_dir)
+        stats_output = os.path.join(bbmap_output_dir, "stats.tsv")
+        sam_output = os.path.join(bbmap_output_dir, "pairedMapped.sam.gz")
+        coverage_stats_output = os.path.join(bbmap_output_dir, "covstats.txt")
         stats_cmd = [BBTOOLS_STATS, "format=6", "in={}".format(scaffold_file), ">", stats_output]
         print("Running BBTools stats.sh with command:")
         print(" ".join(stats_cmd))
@@ -284,7 +294,7 @@ class Pipeline(object):
         }
 
     def _build_and_upload_report(self, pipeline_output, output_objects, workspace_name):
-        report_util = ReportUtil(self.callback_url, self.scratch_dir)
+        report_util = ReportUtil(self.callback_url, self.output_dir)
         stored_objects = list()
         stored_objects.append({
             "ref": output_objects["assembly_upa"],

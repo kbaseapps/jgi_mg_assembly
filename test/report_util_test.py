@@ -50,26 +50,3 @@ class report_util_test(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             ru.make_report(self.stats_file, self.cov_file, None, [])
         self.assertIn("A workspace name is required", str(cm.exception))
-
-    def test_mkdir_ok(self):
-        some_path = os.path.join("a_dir", "another_dir", "a_deep_dir")
-        self.assertFalse(os.path.exists(some_path))
-        self._get_report_util()._mkdir_p(some_path)
-        self.assertTrue(os.path.exists(some_path))
-
-    def test_mkdir_fail(self):
-        ru = self._get_report_util()
-        # try to make an empty path
-        with self.assertRaises(ValueError) as cm:
-            ru._mkdir_p(None)
-        self.assertIn("A path is required", str(cm.exception))
-
-        # try to make a path that already exists (should fail silently)
-        self.assertTrue(os.path.exists("data"))
-        ru._mkdir_p("data")
-
-        # try to make a path without permission, like something under /usr
-        # note - this works fine in kb-sdk test, as that runs as root.
-        # not sure how to trigger the final exception, so ignoring this step.
-        # with self.assertRaises(Exception):
-        #     ru._mkdir_p(os.path.join(os.sep, "usr", "bin", "foo"))
