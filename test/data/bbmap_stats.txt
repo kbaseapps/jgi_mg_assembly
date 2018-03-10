@@ -1,0 +1,95 @@
+Executing align2.BBMap [build=1, overwrite=true, fastareadlen=500, nodisk=true, interleaved=true, ambiguous=random, in=/kb/module/work/tmp/jgi_mga_output_1520661318120/bfc/input.corr.fastq.gz, ref=/kb/module/work/tmp/jgi_mga_output_1520661318120/createAGPfile/assembly.contigs.fasta, out=/kb/module/work/tmp/jgi_mga_output_1520661318120/readMappingPairs/pairedMapped.sam.gz, covstats=/kb/module/work/tmp/jgi_mga_output_1520661318120/readMappingPairs/covstats.txt]
+Version 37.90 [build=1, overwrite=true, fastareadlen=500, nodisk=true, interleaved=true, ambiguous=random, in=/kb/module/work/tmp/jgi_mga_output_1520661318120/bfc/input.corr.fastq.gz, ref=/kb/module/work/tmp/jgi_mga_output_1520661318120/createAGPfile/assembly.contigs.fasta, out=/kb/module/work/tmp/jgi_mga_output_1520661318120/readMappingPairs/pairedMapped.sam.gz, covstats=/kb/module/work/tmp/jgi_mga_output_1520661318120/readMappingPairs/covstats.txt]
+
+Set INTERLEAVED to true
+Choosing a site randomly for ambiguous mappings.
+Executing dna.FastaToChromArrays2 [/kb/module/work/tmp/jgi_mga_output_1520661318120/createAGPfile/assembly.contigs.fasta, 1, writeinthread=false, genscaffoldinfo=true, retain, waitforwriting=false, gz=true, maxlen=536670912, writechroms=false, minscaf=1, midpad=300, startpad=8000, stoppad=8000, nodisk=true]
+
+Set genScaffoldInfo=true
+Set genome to 1
+
+Loaded Reference:	0.005 seconds.
+Loading index for chunk 1-1, build 1
+Indexing threads started for block 0-1
+Indexing threads finished for block 0-1
+Generated Index:	0.172 seconds.
+Analyzed Index:   	2.580 seconds.
+Started output stream:	0.038 seconds.
+Cleared Memory:    	0.133 seconds.
+Processing reads in paired-ended mode.
+Started read stream.
+Started 4 mapping threads.
+Detecting finished threads: 0, 1, 2, 3
+
+   ------------------   Results   ------------------   
+
+Genome:                	1
+Key Length:            	13
+Max Indel:             	16000
+Minimum Score Ratio:  	0.56
+Mapping Mode:         	normal
+Reads Used:           	358	(35279 bases)
+
+Mapping:          	0.181 seconds.
+Reads/sec:       	1982.91
+kBases/sec:      	195.41
+
+
+Pairing data:   	pct pairs	num pairs 	pct bases	   num bases
+
+mated pairs:     	  2.2346% 	        4 	  2.2280% 	         786
+bad pairs:       	  0.0000% 	        0 	  0.0000% 	           0
+insert size avg: 	  287.75
+
+
+Read 1 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  4.4693% 	        8 	  4.4944% 	         793
+unambiguous:     	  4.4693% 	        8 	  4.4944% 	         793
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  4.4693% 	        8 	  4.4944% 	         793
+semiperfect site:	  4.4693% 	        8 	  4.4944% 	         793
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	100.0000% 	         793
+Error Rate:      	  0.0000% 	        0 	  0.0000% 	           0
+Sub Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+Del Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+Ins Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+N Rate:          	  0.0000% 	        0 	  0.0000% 	           0
+
+
+Read 2 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  4.4693% 	        8 	  4.5308% 	         799
+unambiguous:     	  4.4693% 	        8 	  4.5308% 	         799
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  4.4693% 	        8 	  4.5308% 	         799
+semiperfect site:	  4.4693% 	        8 	  4.5308% 	         799
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	100.0000% 	         799
+Error Rate:      	  0.0000% 	        0 	  0.0000% 	           0
+Sub Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+Del Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+Ins Rate:        	  0.0000% 	        0 	  0.0000% 	           0
+N Rate:          	  0.0000% 	        0 	  0.0000% 	           0
+
+Reads:                               	358
+Mapped reads:                        	16
+Mapped bases:                        	1592
+Ref scaffolds:                       	2
+Ref bases:                           	725
+
+Percent mapped:                      	4.469
+Percent proper pairs:                	2.235
+Average coverage:                    	2.196
+Standard deviation:                    	0.660
+Percent scaffolds with any coverage: 	100.00
+Percent of reference bases covered:  	100.00
+
+Total time:     	3.301 seconds.
