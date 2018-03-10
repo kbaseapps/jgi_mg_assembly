@@ -106,13 +106,16 @@ class ReportUtil(object):
 
         counts = self._calc_alignment_counts(stats_files, reads_counts)
         m50, m90 = self._calc_m50_m90(stats_files, counts["input_reads"])
-        alignment_stats = (
-            "Alignment of reads to final assembly:\n"
-            "The number of reads used as input to aligner is: {}\n"
-            "The number of aligned reads is: {} ({})\n"
-            "m50/m90 (length where 50% or 90% of reads align to "
-            "contigs of this length or larger) is: {}/{}\n\n"
-        ).format(counts["input_reads"], counts["aligned"], counts["aligned_percent"], m50, m90)
+        alignment_stats = "Alignment of reads to final assembly:\n"
+        if "error" in counts:
+            alignment_stats = alignment_stats + "An error occurred! Unable to calculate alignment stats: {}".format(counts["error"])
+        else:
+            alignment_stats = alignment_stats + (
+                "The number of reads used as input to aligner is: {}\n"
+                "The number of aligned reads is: {} ({})\n"
+                "m50/m90 (length where 50% or 90% of reads align to "
+                "contigs of this length or larger) is: {}/{}\n\n"
+            ).format(counts["input_reads"], counts["aligned"], counts["aligned_percent"], m50, m90)
 
         protocol = self._protocol_text()
 
@@ -217,13 +220,13 @@ If you have any questions, please contact the JGI project manager.
         with open(stats_files["covstats"], "r") as f:
             for line in f:
                 vals = line.split()
-                if not isinstance(vals[6], int):
+                if not vals[6].isdigit():
                     continue
-                total = total + vals[6] + vals[7]
+                total = total + int(vals[6]) + int(vals[7])
                 if total / input_reads_count > 0.5 and m50 == "NA":
-                    m50 = line[2]
+                    m50 = vals[2]
                 if total / input_reads_count > 0.9 and m90 == "NA":
-                    m90 = line[2]
+                    m90 = vals[2]
         return m50, m90
 
     def _upload_report(self, report_dir, file_links, workspace_name, saved_objects):

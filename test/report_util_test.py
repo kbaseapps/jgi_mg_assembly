@@ -78,7 +78,7 @@ class report_util_test(unittest.TestCase):
             del stats_copy[key]
             with self.assertRaises(ValueError) as cm:
                 ru.make_report(stats_copy, reads_counts, util.get_ws_name(), [])
-            self.assertIn("Required stats file '{}' is not present!".format(key), str(cm.execption))
+            self.assertIn("Required stats file '{}' is not present!".format(key), str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
             ru.make_report(stats_files, None, util.get_ws_name(), [])
