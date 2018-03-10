@@ -8,11 +8,22 @@ from jgi_mg_assembly.utils.report import ReportUtil
 class report_util_test(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # * bbmap_stats - the generated stats from BBMap, that's usually sent to stderr
+        # * covstats - the coverage stats from BBMap
+        # * assembly_stats - stats from the assembly (made with BBTools stats.sh)
+        # * assembly_tsv - a TSV version of most of those stats (with some funky headers)
+        #
+        # reads_counts is another dict, with reads counted at different points in the pipeline
+        # * pre_filter - number of reads before any filtering, as uploaded by the user
+        # * filtered - number of reads after running RQCFilter
+        # * corrected - number of reads after running BFC
         cls.config = util.get_config()
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
         cls.scratch_dir = cls.config['scratch']
-        cls.stats_file = util.file_to_scratch(os.path.join("data", "stats.tsv"), overwrite=True)
-        cls.cov_file = util.file_to_scratch(os.path.join("data", "coverage.tsv"), overwrite=True)
+        cls.assembly_stats_tsv = util.file_to_scratch(os.path.join("data", "assembly.scaffolds.fasta.stats.tsv"), overwrite=True)
+        cls.assembly_stats_file = util.file_to_scratch(os.path.join("data", "assembly.scaffolds.fasta.stats.txt"), overwrite=True)
+        cls.cov_stats = util.file_to_scratch(os.path.join("data", "covstats.txt"), overwrite=True)
+        cls.bbmap_stats_file = util.file_to_scratch(os.path.join("data", "bbmap_stats.txt"), overwrite=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -23,53 +34,67 @@ class report_util_test(unittest.TestCase):
 
     def test_make_report_ok(self):
         # stats_file, coverage_file, workspace_name, saved_objects
+        stats_files = {
+            "bbmap_stats": self.bbmap_stats_file,
+            "covstats": self.cov_stats,
+            "assembly_stats": self.assembly_stats_file,
+            "assembly_tsv": self.assembly_stats_tsv
+        }
+        reads_counts = {
+            "pre_filter": 10000,
+            "filtered": 8000,
+            "corrected": 7000
+        }
         report_info = self._get_report_util().make_report(
-            self.stats_file, self.cov_file, util.get_ws_name(), []
+            stats_files, reads_counts, util.get_ws_name(), []
         )
         self.assertIn('report_ref', report_info)
         self.assertIn('report_name', report_info)
 
     def test_make_report_bad_inputs(self):
+        reads_counts = {
+            "pre_filter": 10000,
+            "filtered": 8000,
+            "corrected": 7000
+        }
+        stats_files = {
+            "bbmap_stats": self.bbmap_stats_file,
+            "covstats": self.cov_stats,
+            "assembly_stats": self.assembly_stats_file,
+            "assembly_tsv": self.assembly_stats_tsv
+        }
+
         ru = self._get_report_util()
         with self.assertRaises(ValueError) as cm:
-            ru.make_report(None, self.cov_file, util.get_ws_name(), [])
-        self.assertIn("A stats file is required", str(cm.exception))
+            ru.make_report(None, reads_counts, util.get_ws_name(), [])
+        self.assertIn("A dictionary of stats_files is required", str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
-            ru.make_report("not_a_file", self.cov_file, util.get_ws_name(), [])
-        self.assertIn("does not appear to exist", str(cm.exception))
+            ru.make_report("not_a_file", reads_counts, util.get_ws_name(), [])
+        self.assertIn("A dictionary of stats_files is required", str(cm.exception))
+
+        for key in stats_files:
+            stats_copy = stats_files.copy()
+            del stats_copy[key]
+            with self.assertRaises(ValueError) as cm:
+                ru.make_report(stats_copy, reads_counts, util.get_ws_name(), [])
+            self.assertIn("Required stats file '{}' is not present!".format(key), str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
-            ru.make_report(self.stats_file, None, util.get_ws_name(), [])
-        self.assertIn("A coverage file is required", str(cm.exception))
+            ru.make_report(stats_files, None, util.get_ws_name(), [])
+        self.assertIn("A dictionary of reads_counts is required", str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
-            ru.make_report(self.stats_file, "not a file", util.get_ws_name(), [])
-        self.assertIn("does not appear to exist", str(cm.exception))
+            ru.make_report(stats_files, "not a file", util.get_ws_name(), [])
+        self.assertIn("A dictionary of reads_counts is required", str(cm.exception))
+
+        for key in reads_counts:
+            reads_copy = reads_counts.copy()
+            del reads_copy[key]
+            with self.assertRaises(ValueError) as cm:
+                ru.make_report(stats_files, reads_copy, util.get_ws_name(), [])
+            self.assertIn("Required reads count '{}' is not present!".format(key), str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
-            ru.make_report(self.stats_file, self.cov_file, None, [])
+            ru.make_report(stats_files, reads_counts, None, [])
         self.assertIn("A workspace name is required", str(cm.exception))
-
-    def test_mkdir_ok(self):
-        some_path = os.path.join("a_dir", "another_dir", "a_deep_dir")
-        self.assertFalse(os.path.exists(some_path))
-        self._get_report_util()._mkdir_p(some_path)
-        self.assertTrue(os.path.exists(some_path))
-
-    def test_mkdir_fail(self):
-        ru = self._get_report_util()
-        # try to make an empty path
-        with self.assertRaises(ValueError) as cm:
-            ru._mkdir_p(None)
-        self.assertIn("A path is required", str(cm.exception))
-
-        # try to make a path that already exists (should fail silently)
-        self.assertTrue(os.path.exists("data"))
-        ru._mkdir_p("data")
-
-        # try to make a path without permission, like something under /usr
-        # note - this works fine in kb-sdk test, as that runs as root.
-        # not sure how to trigger the final exception, so ignoring this step.
-        # with self.assertRaises(Exception):
-        #     ru._mkdir_p(os.path.join(os.sep, "usr", "bin", "foo"))
