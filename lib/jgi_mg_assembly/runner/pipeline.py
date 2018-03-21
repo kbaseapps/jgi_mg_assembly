@@ -150,8 +150,6 @@ class Pipeline(object):
         zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")
         bfc_cmd = [BFC, "-1", "-k", "21", "-t", "10"]
 
-        # on_hpc = False
-        # if on_hpc:  # we're somewhere that can handle it...
         bfc_cmd = bfc_cmd + ["-s", "10g"]
         bfc_cmd = bfc_cmd + [input_file["filtered_fastq_file"], ">", bfc_output_file]
 
@@ -285,6 +283,7 @@ class Pipeline(object):
         bbmap_stats_output = os.path.join(bbmap_output_dir, "bbmap_stats.txt")
         bbmap_cmd = [
             BBMAP,
+            "-Xmx24g",
             "nodisk=true",
             "interleaved=true",
             "ambiguous=random",
