@@ -292,6 +292,7 @@ class Pipeline(object):
             "ref={}".format(contigs_file),
             "out={}".format(sam_output),
             "covstats={}".format(coverage_stats_output),
+            "-Xmx24g"
             "2>",
             bbmap_stats_output
         ]
