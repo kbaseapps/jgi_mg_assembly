@@ -1,7 +1,7 @@
 [ {
   "module_name" : "BBTools",
   "type" : "sdk",
-  "version_tag" : "dev"
+  "file_path" : "https://raw.githubusercontent.com/kbaseapps/BBTools/master/BBTools.spec"
 }, {
   "module_name" : "DataFileUtil",
   "type" : "sdk",

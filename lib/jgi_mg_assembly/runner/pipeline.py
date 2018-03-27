@@ -132,9 +132,26 @@ class Pipeline(object):
             filtered_fastq_file = as it says, gzipped
         """
         print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
-        bbtools = BBTools(self.callback_url)
+        bbtools = BBTools(self.callback_url, service_ver='beta')
         result = bbtools.run_RQCFilter_local({
             "reads_file": reads_file
+        }, {
+            "rna": 0,
+            "trimfragadapter": 1,
+            "qtrim": "r",
+            "trimq": 0,
+            "maxns": 3,
+            "minavgquality": 3,
+            "minlength": 51,
+            "mlf": 0.333,
+            "phix": 1,
+            "removehuman": 1,
+            "removedog": 1,
+            "removecat": 1,
+            "removemouse": 1,
+            "khist": 1,
+            "removemicrobes": 1,
+            "clumpify": 1
         })
         print("Done running RQCFilter")
         return result
