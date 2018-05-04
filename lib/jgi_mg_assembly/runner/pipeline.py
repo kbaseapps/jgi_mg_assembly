@@ -127,14 +127,32 @@ class Pipeline(object):
         """
         Runs RQCFilter as a first pass.
         This just calls out to BBTools.run_RQCFilter_local and returns the result.
-        result = dictionary with two keys -
+        result = dictionary with three keys -
             output_directory = path to the output directory
             filtered_fastq_file = as it says, gzipped
+            run_log = path to the stderr log from RQCFilter
         """
         print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
-        bbtools = BBTools(self.callback_url)
+        bbtools = BBTools(self.callback_url, service_ver='dev')
         result = bbtools.run_RQCFilter_local({
             "reads_file": reads_file
+        }, {
+            "rna": 0,
+            "trimfragadapter": 1,
+            "qtrim": "r",
+            "trimq": 0,
+            "maxns": 3,
+            "minavgquality": 3,
+            "minlength": 51,
+            "mlf": 0.333,
+            "phix": 1,
+            "removehuman": 1,
+            "removedog": 1,
+            "removecat": 1,
+            "removemouse": 1,
+            "khist": 1,
+            "removemicrobes": 1,
+            "clumpify": 1
         })
         print("Done running RQCFilter")
         return result
@@ -325,7 +343,8 @@ class Pipeline(object):
             "bbmap_coverage": bbmap_output["coverage"],
             "bbmap_stats": bbmap_output["stats"],
             "assembly_stats": stats_output["stats_file"],
-            "assembly_tsv": stats_output["stats_tsv"]
+            "assembly_tsv": stats_output["stats_tsv"],
+            "rqcfilter_log": rqc_output["run_log"]
         }
 
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
@@ -347,7 +366,8 @@ class Pipeline(object):
             "bbmap_stats": pipeline_output["bbmap_stats"],
             "covstats": pipeline_output["bbmap_coverage"],
             "assembly_stats": pipeline_output["assembly_stats"],
-            "assembly_tsv": pipeline_output["assembly_tsv"]
+            "assembly_tsv": pipeline_output["assembly_tsv"],
+            "rqcfilter_log": pipeline_output["rqcfilter_log"]
         }
         return report_util.make_report(stats_files, pipeline_output["reads_counts"],
                                        workspace_name, stored_objects)

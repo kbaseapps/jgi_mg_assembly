@@ -26,6 +26,7 @@ class ReportUtil(object):
         * covstats - the coverage stats from BBMap
         * assembly_stats - stats from the assembly (made with BBTools stats.sh)
         * assembly_tsv - a TSV version of most of those stats (with some funky headers)
+        * rqcfilter_log - a text file with the run log from RQCFilter
 
         reads_counts is another dict, with reads counted at different points in the pipeline
         * pre_filter - number of reads before any filtering, as uploaded by the user
@@ -43,7 +44,7 @@ class ReportUtil(object):
         """
         if not stats_files or not isinstance(stats_files, dict):
             raise ValueError("A dictionary of stats_files is required")
-        required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv"]
+        required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv", "rqcfilter_log"]
         for req in required_files:
             if req not in stats_files:
                 raise ValueError("Required stats file '{}' is not present!".format(req))
