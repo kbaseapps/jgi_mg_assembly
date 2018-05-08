@@ -24,6 +24,7 @@ class report_util_test(unittest.TestCase):
         cls.assembly_stats_file = util.file_to_scratch(os.path.join("data", "assembly.scaffolds.fasta.stats.txt"), overwrite=True)
         cls.cov_stats = util.file_to_scratch(os.path.join("data", "covstats.txt"), overwrite=True)
         cls.bbmap_stats_file = util.file_to_scratch(os.path.join("data", "bbmap_stats.txt"), overwrite=True)
+        cls.rqcfilter_log = util.file_to_scratch(os.path.join("data", "rqcfilter_log.txt"), overwrite=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -38,7 +39,8 @@ class report_util_test(unittest.TestCase):
             "bbmap_stats": self.bbmap_stats_file,
             "covstats": self.cov_stats,
             "assembly_stats": self.assembly_stats_file,
-            "assembly_tsv": self.assembly_stats_tsv
+            "assembly_tsv": self.assembly_stats_tsv,
+            "rqcfilter_log": self.rqcfilter_log
         }
         reads_counts = {
             "pre_filter": 10000,
@@ -61,7 +63,8 @@ class report_util_test(unittest.TestCase):
             "bbmap_stats": self.bbmap_stats_file,
             "covstats": self.cov_stats,
             "assembly_stats": self.assembly_stats_file,
-            "assembly_tsv": self.assembly_stats_tsv
+            "assembly_tsv": self.assembly_stats_tsv,
+            "rqcfilter_log": self.rqcfilter_log
         }
 
         ru = self._get_report_util()

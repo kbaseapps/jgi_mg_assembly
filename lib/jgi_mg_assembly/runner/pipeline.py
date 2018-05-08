@@ -133,7 +133,7 @@ class Pipeline(object):
             run_log = path to the stderr log from RQCFilter
         """
         print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
-        bbtools = BBTools(self.callback_url, service_ver='dev')
+        bbtools = BBTools(self.callback_url, service_ver='beta')
         result = bbtools.run_RQCFilter_local({
             "reads_file": reads_file
         }, {
