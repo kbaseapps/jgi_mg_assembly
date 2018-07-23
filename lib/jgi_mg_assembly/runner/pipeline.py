@@ -9,7 +9,7 @@ from readlength import readlength
 
 BFC = "/kb/module/bin/bfc"
 SEQTK = "/kb/module/bin/seqtk"
-SPADES = "/opt/SPAdes-3.11.1-Linux/bin/spades.py"
+SPADES = "/opt/SPAdes-3.12.0-Linux/bin/spades.py"
 BBTOOLS_STATS = "/kb/module/bbmap/stats.sh"
 BBMAP = "/kb/module/bbmap/bbmap.sh"
 PIGZ = "pigz"
