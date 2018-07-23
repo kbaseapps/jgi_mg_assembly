@@ -38,13 +38,19 @@ RUN cd /kb/module/bbmap/jni \
 # COPY data/rqc_data/global /global
 
 # install SPAdes
+# RUN cd /opt \
+#     && SPADES_VER=3.11.1 \
+#     && SPADES=SPAdes-$SPADES_VER-Linux.tar.gz \
+#     && wget http://spades.bioinf.spbau.ru/release$SPADES_VER/$SPADES \
+#     && tar -xvzf $SPADES \
+#     && rm $SPADES
+
 RUN cd /opt \
-    && SPADES_VER=3.11.1 \
+    && SPADES_VER=3.12.0 \
     && SPADES=SPAdes-$SPADES_VER-Linux.tar.gz \
-    && wget http://spades.bioinf.spbau.ru/release$SPADES_VER/$SPADES \
+    && wget http://cab.spbu.ru/files/release$SPADES_VER/$SPADES \
     && tar -xvzf $SPADES \
     && rm $SPADES
-
 
 # -----------------------------------------
 
