@@ -33,18 +33,7 @@ RUN BBMAP=BBMap_37.90.tar.gz \
 RUN cd /kb/module/bbmap/jni \
     && make -f makefile.linux
 
-# copy local ref files
-# RUN mkdir /global
-# COPY data/rqc_data/global /global
-
 # install SPAdes
-# RUN cd /opt \
-#     && SPADES_VER=3.11.1 \
-#     && SPADES=SPAdes-$SPADES_VER-Linux.tar.gz \
-#     && wget http://spades.bioinf.spbau.ru/release$SPADES_VER/$SPADES \
-#     && tar -xvzf $SPADES \
-#     && rm $SPADES
-
 RUN cd /opt \
     && SPADES_VER=3.12.0 \
     && SPADES=SPAdes-$SPADES_VER-Linux.tar.gz \
