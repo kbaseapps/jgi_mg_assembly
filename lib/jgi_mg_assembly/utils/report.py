@@ -17,7 +17,7 @@ class ReportUtil(object):
         self.callback_url = callback_url
         self.output_dir = output_dir
 
-    def make_report(self, stats_files, reads_counts, workspace_name, saved_objects):
+    def make_report(self, stats_files, reads_info, workspace_name, saved_objects):
         """
         From the various stats files, this produces an HTML report containing most of the
         information. It also assembles those various stats files into a report object.
@@ -28,10 +28,13 @@ class ReportUtil(object):
         * assembly_tsv - a TSV version of most of those stats (with some funky headers)
         * rqcfilter_log - a text file with the run log from RQCFilter
 
-        reads_counts is another dict, with reads counted at different points in the pipeline
-        * pre_filter - number of reads before any filtering, as uploaded by the user
-        * filtered - number of reads after running RQCFilter
-        * corrected - number of reads after running BFC
+        reads_info is another dict, with reads counted at different points in the pipeline
+        These are all expected to be results of runner.readlength.readlength. So they're all
+        dicts with info about the reads. Only "count" is used here, so that's all that's
+        needed.
+        * pre_filter - info about reads before any filtering, as uploaded by the user
+        * filtered - info about reads after running RQCFilter
+        * corrected - info about reads after running BFC
 
         Expects saved_objects to be in the correct format for KBaseReports. So, a list of dicts:
         {
@@ -51,12 +54,12 @@ class ReportUtil(object):
         for key in stats_files:
             if not os.path.exists(stats_files[key]):
                 raise ValueError("Stats file '{}' with path '{}' doesn't appear to exist!".format(key, stats_files[key]))
-        if not reads_counts or not isinstance(reads_counts, dict):
-            raise ValueError("A dictionary of reads_counts is required")
+        if not reads_info or not isinstance(reads_info, dict):
+            raise ValueError("A dictionary of reads_info is required")
         required_counts = ["pre_filter", "filtered", "corrected"]
         for req in required_counts:
-            if req not in reads_counts:
-                raise ValueError("Required reads count '{}' is not present!".format(req))
+            if req not in reads_info:
+                raise ValueError("Required reads info '{}' is not present!".format(req))
         if not workspace_name:
             raise ValueError("A workspace name is required")
         if not saved_objects:
@@ -79,33 +82,33 @@ class ReportUtil(object):
         }]
 
         html_file_name = os.path.join(html_report_dir, "index.html")
-        self._write_html_file(html_file_name, stats_files, reads_counts)
+        self._write_html_file(html_file_name, stats_files, reads_info)
         return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
 
-    def _write_html_file(self, html_file_name, stats_files, reads_counts):
+    def _write_html_file(self, html_file_name, stats_files, reads_info):
         """
         Assembles and writes out an HTML report file, following the idoms developed by JGI.
         Right now, this just cobbles together text into a single <pre> formatted HTML file.
         """
         header = "Assembly using the JGI metagenome assembly pipeline, interpreted by KBase\n\n"
 
-        filter_percent = self._percent_reads(reads_counts["filtered"], reads_counts["pre_filter"])
-        corrected_percent = self._percent_reads(reads_counts["corrected"],
-                                                reads_counts["pre_filter"])
+        filter_percent = self._percent_reads(reads_info["filtered"]["count"], reads_info["pre_filter"]["count"])
+        corrected_percent = self._percent_reads(reads_info["corrected"]["count"],
+                                                reads_info["pre_filter"]["count"])
         read_processing = (
             "Read Pre-processing\n"
             "The number of raw input reads is: {}\n"
             "The number of reads remaining after quality filter: {} ({}% of raw)\n"
             "The final number of reads remaining "
             "after read correction: {} ({}% of raw)\n\n"
-        ).format(reads_counts["pre_filter"], reads_counts["filtered"], filter_percent,
-                 reads_counts["corrected"], corrected_percent)
+        ).format(reads_info["pre_filter"]["count"], reads_info["filtered"]["count"], filter_percent,
+                 reads_info["corrected"]["count"], corrected_percent)
 
         with open(stats_files["assembly_stats"]) as stats:
             assembly_stats_file = "".join(stats.readlines())
         assembly_stats = "Assembly stats:\n{}".format(assembly_stats_file)
 
-        counts = self._calc_alignment_counts(stats_files, reads_counts)
+        counts = self._calc_alignment_counts(stats_files)
         m50, m90 = self._calc_m50_m90(stats_files, counts["input_reads"])
         alignment_stats = "Alignment of reads to final assembly:\n"
         if "error" in counts:
@@ -171,7 +174,7 @@ If you have any questions, please contact the JGI project manager.
             return 0  # special case here - if y = 0, and x > 0, something's funky. ignore.
         return int(float(x) / float(y) * 100)
 
-    def _calc_alignment_counts(self, stats_files, reads_counts):
+    def _calc_alignment_counts(self, stats_files):
         """
         Adapted from jgi_mga_create_metadata_dot_json.metagenome_alignment_metadata
 
