@@ -206,7 +206,7 @@ class Pipeline(object):
         spades_kmers = [33, 55, 77, 99, 127]
         used_kmers = [k for k in spades_kmers if k <= reads_info["max"]]
 
-        spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(used_kmers), "--meta", "-t", "32",
+        spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(map(str, used_kmers)), "--meta", "-t", "32",
                       "-m", "2000", "-o", spades_output_dir, "--12", input_file]
 
         print("Running SPAdes with command:")
