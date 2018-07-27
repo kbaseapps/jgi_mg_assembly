@@ -43,9 +43,15 @@ class report_util_test(unittest.TestCase):
             "rqcfilter_log": self.rqcfilter_log
         }
         reads_counts = {
-            "pre_filter": 10000,
-            "filtered": 8000,
-            "corrected": 7000
+            "pre_filter": {
+                "count": 10000
+            },
+            "filtered": {
+                "count": 8000
+            },
+            "corrected": {
+                "count": 7000
+            }
         }
         report_info = self._get_report_util().make_report(
             stats_files, reads_counts, util.get_ws_name(), []
@@ -55,9 +61,15 @@ class report_util_test(unittest.TestCase):
 
     def test_make_report_bad_inputs(self):
         reads_counts = {
-            "pre_filter": 10000,
-            "filtered": 8000,
-            "corrected": 7000
+            "pre_filter": {
+                "count": 10000
+            },
+            "filtered": {
+                "count": 8000
+            },
+            "corrected": {
+                "count": 7000
+            }
         }
         stats_files = {
             "bbmap_stats": self.bbmap_stats_file,
@@ -85,18 +97,18 @@ class report_util_test(unittest.TestCase):
 
         with self.assertRaises(ValueError) as cm:
             ru.make_report(stats_files, None, util.get_ws_name(), [])
-        self.assertIn("A dictionary of reads_counts is required", str(cm.exception))
+        self.assertIn("A dictionary of reads_info is required", str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
             ru.make_report(stats_files, "not a file", util.get_ws_name(), [])
-        self.assertIn("A dictionary of reads_counts is required", str(cm.exception))
+        self.assertIn("A dictionary of reads_info is required", str(cm.exception))
 
         for key in reads_counts:
             reads_copy = reads_counts.copy()
             del reads_copy[key]
             with self.assertRaises(ValueError) as cm:
                 ru.make_report(stats_files, reads_copy, util.get_ws_name(), [])
-            self.assertIn("Required reads count '{}' is not present!".format(key), str(cm.exception))
+            self.assertIn("Required reads info '{}' is not present!".format(key), str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
             ru.make_report(stats_files, reads_counts, None, [])

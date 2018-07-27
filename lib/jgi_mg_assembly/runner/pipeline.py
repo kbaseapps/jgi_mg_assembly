@@ -66,11 +66,11 @@ class Pipeline(object):
         If not, just returns happily.
         """
         errors = []
-        if params.get("reads_upa", None) is None:
+        if params.get("reads_upa") is None:
             errors.append("Missing a Reads object!")
-        if params.get("output_assembly_name", None) is None:
+        if params.get("output_assembly_name") is None:
             errors.append("Missing the output assembly name!")
-        if params.get("workspace_name", None) is None:
+        if params.get("workspace_name") is None:
             errors.append("Missing workspace name for the output data!")
 
         if len(errors):
@@ -96,15 +96,15 @@ class Pipeline(object):
         reporting)
         """
 
-        n_pre_filter_reads = readlength(files,
-                                        os.path.join(self.output_dir, "pre_filter_readlen.txt"))
+        pre_filter_reads_info = readlength(files,
+                                           os.path.join(self.output_dir, "pre_filter_readlen.txt"))
         rqc_output = self._run_rqcfilter(files)
-        n_filtered_reads = readlength(rqc_output["filtered_fastq_file"],
-                                      os.path.join(self.output_dir, "filtered_readlen.txt"))
+        filtered_reads_info = readlength(rqc_output["filtered_fastq_file"],
+                                         os.path.join(self.output_dir, "filtered_readlen.txt"))
         bfc_output = self._run_bfc_seqtk(rqc_output)
-        n_corrected_reads = readlength(bfc_output["unzipped"],
-                                       os.path.join(self.output_dir, "corrected_readlen.txt"))
-        spades_output = self._run_spades(bfc_output["zipped"])
+        corrected_reads_info = readlength(bfc_output["unzipped"],
+                                          os.path.join(self.output_dir, "corrected_readlen.txt"))
+        spades_output = self._run_spades(bfc_output["zipped"], corrected_reads_info)
         agp_output = self._create_agp_file(spades_output)
         stats_output = self._run_assembly_stats(agp_output["scaffolds"])
         bbmap_output = self._run_bbmap(
@@ -116,10 +116,10 @@ class Pipeline(object):
         return_dict = self._format_outputs(
             rqc_output, bfc_output, spades_output, agp_output, stats_output, bbmap_output
         )
-        return_dict["reads_counts"] = {
-            "pre_filter": n_pre_filter_reads,
-            "filtered": n_filtered_reads,
-            "corrected": n_corrected_reads
+        return_dict["reads_info"] = {
+            "pre_filter": pre_filter_reads_info,
+            "filtered": filtered_reads_info,
+            "corrected": corrected_reads_info
         }
         return return_dict
 
@@ -192,13 +192,21 @@ class Pipeline(object):
             "zipped": zipped_output
         }
 
-    def _run_spades(self, input_file):
+    def _run_spades(self, input_file, reads_info):
         """
         Runs spades, returns the generated output directory name. It's full of standard files.
+        This will use (by default) k=33,55,77,99,127.
+        However, if the max read length < any of those k, that'll be omitted.
+        For example, if your input reads are such that the longest one is 100 bases, this'll
+        omit k=127.
         """
         spades_output_dir = os.path.join(self.output_dir, "spades", "spades3")
         mkdir(spades_output_dir)
-        spades_cmd = [SPADES, "--only-assembler", "-k", "33,55,77,99,127", "--meta", "-t", "32",
+
+        spades_kmers = [33, 55, 77, 99, 127]
+        used_kmers = [k for k in spades_kmers if k <= reads_info["max"]]
+
+        spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(used_kmers), "--meta", "-t", "32",
                       "-m", "2000", "-o", spades_output_dir, "--12", input_file]
 
         print("Running SPAdes with command:")
@@ -369,5 +377,5 @@ class Pipeline(object):
             "assembly_tsv": pipeline_output["assembly_tsv"],
             "rqcfilter_log": pipeline_output["rqcfilter_log"]
         }
-        return report_util.make_report(stats_files, pipeline_output["reads_counts"],
+        return report_util.make_report(stats_files, pipeline_output["reads_info"],
                                        workspace_name, stored_objects)

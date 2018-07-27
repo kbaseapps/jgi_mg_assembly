@@ -14,8 +14,18 @@ BBTOOLS_READLEN = "/kb/module/bbmap/readlength.sh"
 
 def readlength(input_file, output_file):
     """
-    Runs readlength.sh on input_file to generate output_file. It then skims that file for the
-    '#Reads:' line, and returns the numeric value given there.
+    Runs readlength.sh on input_file to generate output_file. It then skims that file for several
+    values and returns them as a dictionary. The keys to this are:
+    count - the number of reads
+    bases - the total number of bases
+    max - the length of the longest read
+    min - the length of the shortest read
+    avg - the average read length
+    median - the median read length
+    mode - the mode of the mean lengths
+    std_dev - the standard deviation of read lengths
+
+    This also calculates the histogram, but it left out for now. (Unless it's needed later)
 
     The path to the output file's directory is expected to exist. If not, this might cause an
     error. If the output file exists, it will be overwritten.
@@ -37,9 +47,37 @@ def readlength(input_file, output_file):
 
     if not os.path.exists(output_file):
         raise RuntimeError("The output file '{}' appears not to have been made!")
+    ret_value = dict()
     with open(output_file, "r") as read_len_file:
+        line_mapping = {
+            "#Reads:": ("count", int),
+            "#Bases:": ("bases", int),
+            "#Max:" : ("max", int),
+            "#Min:": ("min", int),
+            "#Avg:": ("avg", float),
+            "#Median:": ("median", int),
+            "#Mode:": ("mode", int),
+            "#Std_Dev:": ("std_dev", float),
+        }
         for line in read_len_file:
-            if line.startswith("#Reads:"):
-                num_reads = line.split()[-1]
-
-    return num_reads
+            chopped = line.split()
+            if chopped[0] in line_mapping:
+                key, map_fn = line_mapping[chopped[0]]
+                ret_value[key] = map_fn(chopped[1])
+            # if line.startswith("#Reads:"):
+            #     ret_value['count'] = line.split()[-1]
+            # elif line.startswith("#Bases:")
+            #     ret_value['bases'] = line.split()[-1]
+            # elif line.startswith("#Max:")
+            #     ret_value['max'] = line.split()[-1]
+            # elif line.startswith("#Min:")
+            #     ret_value['min'] = line.split()[-1]
+            # elif line.startswith("#Avg:")
+            #     ret_value['avg'] = line.split()[-1]
+            # elif line.startswith("#Median:")
+            #     ret_value['median'] = line.split()[-1]
+            # elif line.startswith("#Mode:")
+            #     ret_value['mode'] = line.split()[-1]
+            # elif line.startswith("#Std_Dev:")
+            #     ret_value['std_dev'] = line.split()[-1]
+    return ret_value
