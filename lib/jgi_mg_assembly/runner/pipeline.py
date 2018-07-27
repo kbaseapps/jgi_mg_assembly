@@ -209,6 +209,8 @@ class Pipeline(object):
         spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(map(str, used_kmers)), "--meta", "-t", "32",
                       "-m", "2000", "-o", spades_output_dir, "--12", input_file]
 
+        print("SPAdes input reads info:")
+        print(reads_info)
         print("Running SPAdes with command:")
         print(" ".join(spades_cmd))
         p = subprocess.Popen(spades_cmd, cwd=self.scratch_dir, shell=False)
