@@ -195,12 +195,16 @@ class Pipeline(object):
     def _run_spades(self, input_file, reads_info):
         """
         Runs spades, returns the generated output directory name. It's full of standard files.
+        This will use (by default) k=33,55,77,99,127.
+        However, if the max read length < any of those k, that'll be omitted.
+        For example, if your input reads are such that the longest one is 100 bases, this'll
+        omit k=127.
         """
         spades_output_dir = os.path.join(self.output_dir, "spades", "spades3")
         mkdir(spades_output_dir)
 
         spades_kmers = [33, 55, 77, 99, 127]
-        used_kmers = [k for k in spades_kmers if k < reads_info["avg"]]
+        used_kmers = [k for k in spades_kmers if k <= reads_info["max"]]
 
         spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(used_kmers), "--meta", "-t", "32",
                       "-m", "2000", "-o", spades_output_dir, "--12", input_file]
