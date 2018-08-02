@@ -59,7 +59,7 @@ description : |
         </li>
         <li>
             <p>
-                <b>BFC - bloom filter correction<b> This is a fast and easy-to-use sequencing error corrector designed for Illumina short reads. It uses a non-greedy algorithm but still maintains a speed comparable to implementations based on greedy methods. In evaluations on real data, BFC appears to correct more errors with fewer overcorrections in comparison to existing tools. It particularly does well in suppressing systematic sequencing errors, which helps to improve the base accuracy of de novo assemblies.
+                <b>BFC - bloom filter correction</b> This is a fast and easy-to-use sequencing error corrector designed for Illumina short reads. It uses a non-greedy algorithm but still maintains a speed comparable to implementations based on greedy methods. In evaluations on real data, BFC appears to correct more errors with fewer overcorrections in comparison to existing tools. It particularly does well in suppressing systematic sequencing errors, which helps to improve the base accuracy of de novo assemblies.
             </p>
             <p>
                 <b>Version:</b> r181
