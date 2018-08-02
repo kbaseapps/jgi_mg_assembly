@@ -356,5 +356,8 @@ class Pipeline(object):
             "assembly_tsv": pipeline_output["assembly_tsv"],
             "rqcfilter_log": pipeline_output["rqcfilter_log"]
         }
+        for f in ["spades_log", "spades_warnings", "spades_params"]:
+            if f in pipeline_output:
+                stats_files[f] = pipeline_output[f]
         return report_util.make_report(stats_files, pipeline_output["reads_info"],
                                        workspace_name, stored_objects)
