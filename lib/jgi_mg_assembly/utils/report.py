@@ -50,13 +50,19 @@ class ReportUtil(object):
         """
         if not stats_files or not isinstance(stats_files, dict):
             raise ValueError("A dictionary of stats_files is required")
+
+        # Check that required files are present.
         required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv", "rqcfilter_log"]
         for req in required_files:
             if req not in stats_files:
                 raise ValueError("Required stats file '{}' is not present!".format(req))
+
+        # Check that all files actually exist.
         for key in stats_files:
             if not os.path.exists(stats_files[key]):
                 raise ValueError("Stats file '{}' with path '{}' doesn't appear to exist!".format(key, stats_files[key]))
+
+        # Check that the reads infos are present and real, and that their files exist.
         if not reads_info or not isinstance(reads_info, dict):
             raise ValueError("A dictionary of reads_info is required")
         required_counts = ["pre_filter", "filtered", "corrected"]

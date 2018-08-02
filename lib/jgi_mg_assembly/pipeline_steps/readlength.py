@@ -24,6 +24,7 @@ def readlength(input_file, output_file):
     median - the median read length
     mode - the mode of the mean lengths
     std_dev - the standard deviation of read lengths
+    output_file - the output file from readlength, containing a histogram of reads info
 
     This also calculates the histogram, but it left out for now. (Unless it's needed later)
 
@@ -64,20 +65,5 @@ def readlength(input_file, output_file):
             if chopped[0] in line_mapping:
                 key, map_fn = line_mapping[chopped[0]]
                 ret_value[key] = map_fn(chopped[1])
-            # if line.startswith("#Reads:"):
-            #     ret_value['count'] = line.split()[-1]
-            # elif line.startswith("#Bases:")
-            #     ret_value['bases'] = line.split()[-1]
-            # elif line.startswith("#Max:")
-            #     ret_value['max'] = line.split()[-1]
-            # elif line.startswith("#Min:")
-            #     ret_value['min'] = line.split()[-1]
-            # elif line.startswith("#Avg:")
-            #     ret_value['avg'] = line.split()[-1]
-            # elif line.startswith("#Median:")
-            #     ret_value['median'] = line.split()[-1]
-            # elif line.startswith("#Mode:")
-            #     ret_value['mode'] = line.split()[-1]
-            # elif line.startswith("#Std_Dev:")
-            #     ret_value['std_dev'] = line.split()[-1]
+    ret_value["output_file"] = output_file
     return ret_value

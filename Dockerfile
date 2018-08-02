@@ -24,7 +24,7 @@ RUN pip install cffi ndg-httpsclient pyopenssl==17.03 cryptography==2.0.3 --upgr
 WORKDIR /kb/module
 
 # install BBTools
-RUN BBMAP=BBMap_37.90.tar.gz \
+RUN BBMAP=BBMap_38.19.tar.gz \
     && wget -O $BBMAP https://sourceforge.net/projects/bbmap/files/$BBMAP/download \
     && tar -xf $BBMAP \
     && rm $BBMAP

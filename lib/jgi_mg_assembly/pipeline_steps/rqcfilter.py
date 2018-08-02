@@ -26,6 +26,9 @@ class RQCFilterRunner(object):
         self.skip = options.get("skip_rqcfilter")
         self.debug = options.get("debug")
 
+    def get_command(self):
+        return "rqcfilter.sh "
+
     def run(self, reads_file):
         """
         Runs RQCFilter.

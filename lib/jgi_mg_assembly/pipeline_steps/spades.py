@@ -1,3 +1,7 @@
+"""
+Handles running SPAdes from command line, using the command and parameters provided
+by the JGI Metagenome Assembly Pipeline.
+"""
 import os
 import subprocess
 from jgi_mg_assembly.utils.util import (
@@ -6,7 +10,6 @@ from jgi_mg_assembly.utils.util import (
 )
 
 SPADES = "/opt/SPAdes-3.12.0-Linux/bin/spades.py"
-
 
 class SpadesRunner(object):
     def __init__(self, output_dir, scratch_dir):
@@ -35,8 +38,9 @@ class SpadesRunner(object):
                       "-o", spades_output_dir,
                       "--12", input_file]
 
-        print("SPAdes input reads info:")
-        print(reads_info)
+        print("SPAdes input reads info:\n{}\n".format("="*24))
+        file_to_log(reads_info["output_file"])
+        print("{}\nEnd SPAdes input reads info\n".format("="*27))
         print("Running SPAdes with command:")
         print(" ".join(spades_cmd))
         p = subprocess.Popen(spades_cmd, cwd=self.scratch_dir, shell=False)

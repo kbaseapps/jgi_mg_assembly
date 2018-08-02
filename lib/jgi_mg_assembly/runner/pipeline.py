@@ -123,12 +123,9 @@ class Pipeline(object):
         # assemble the filtered/corrected reads with spades
         spades = SpadesRunner(self.output_dir, self.scratch_dir)
         spades_output_dir = spades.run(bfc_output["zipped"], corrected_reads_info, {})
-        # spades_output = self._run_spades(bfc_output["zipped"], corrected_reads_info)
-
-
-        agp_output = self._create_agp_file(spades_output_dir)
 
         # build up the assembly stats
+        agp_output = self._create_agp_file(spades_output_dir)
         stats_output = self._run_assembly_stats(agp_output["scaffolds"])
 
         # map reads to scaffolds with BBMap
@@ -195,7 +192,14 @@ class Pipeline(object):
         """
         in_scaffolds = os.path.join(spades_dir, "scaffolds.fasta")
         if not os.path.exists(in_scaffolds):
-            raise RuntimeError("No scaffolds file generated from SPAdes! Expected {} to exist!".format(in_scaffolds))
+            has_contigs = os.path.exists(os.path.join(spades_dir, "contigs.fasta"))
+            err_str = "SPAdes did not generate a scaffolds file - expected to see {}".format(in_scaffolds)
+            if not has_contigs:
+                err_str = err_str + "\nSPAdes also did not produce a contigs file. This means that either SPAdes finished incorrectly, or your reads were unable to be assembled. Check the Job Status tab for SPAdes details."
+            else:
+                err_str = err_str + "\nThis might mean that your reads were unable to be assembled properly, or were over-filtered. Check the Job Status tab for details. The log segment before running SPAdes should show details about the corrected reads used in assembly."
+            err_str = err_str + "\nUnable to continue running pipeline!"
+            raise RuntimeError(err_str)
         agp_dir = os.path.join(self.output_dir, "createAGPfile")
         mkdir(agp_dir)
         out_scaffolds = os.path.join(agp_dir, "assembly.scaffolds.fasta")
@@ -335,6 +339,15 @@ class Pipeline(object):
         return output_files
 
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
+        """
+        Uploads the new Assembly object to the user's workspace.
+        pipeline_result - dict, needs to see
+        * contigs - the generated contigs file at the end of the pipeline run.
+        workspace_name - the name of the workspace to upload to
+        assembly_name - the name of the new assembly object.
+
+        returns a dict with key "assembly_upa" - the created UPA for the Assembly object.
+        """
         uploaded_upa = self.file_util.upload_assembly(
             pipeline_result["contigs"], workspace_name, assembly_name
         )
@@ -343,12 +356,32 @@ class Pipeline(object):
         }
 
     def _build_and_upload_report(self, pipeline_output, output_objects, workspace_name):
+        """
+        Builds and uploads a report. This contains both an HTML report for display as well
+        as a list of report files with various outputs from the pipeline.
+
+        pipeline_output - dict, expects the following keys:
+        * bbmap_stats - the bbmap stats file
+        * bbmap_coverage - the covstats.txt file
+        * assembly_stats - the AGP assembly stats file
+        * assembly_tsv - the AGP assembly stats tsv file (different contents)
+        * rqcfilter_log - the output log from rqcfilter
+        * reads_info - a dictionary containing info about the reads at each step (initial, filtered, and corrected)
+        *   - should have keys: pre_filter, filtered, corrected,
+        *   - contents are the results of readlength() for each case
+
+        output_objects - dict, expects to see
+        * assembly_upa - the UPA for the new assembly object
+
+        workspace_name - string, the name of the workspace to upload the report to
+        """
         report_util = ReportUtil(self.callback_url, self.output_dir)
         stored_objects = list()
         stored_objects.append({
             "ref": output_objects["assembly_upa"],
             "description": "Assembled with the JGI metagenome pipeline."
         })
+
         stats_files = {
             "bbmap_stats": pipeline_output["bbmap_stats"],
             "covstats": pipeline_output["bbmap_coverage"],
@@ -359,5 +392,8 @@ class Pipeline(object):
         for f in ["spades_log", "spades_warnings", "spades_params"]:
             if f in pipeline_output:
                 stats_files[f] = pipeline_output[f]
+        for f in ["pre_filter", "filtered", "corrected"]:
+            if f in pipeline_output["reads_info"]:
+                stats_files[f + "_reads"] = pipeline_output["reads_info"][f]["output_file"]
         return report_util.make_report(stats_files, pipeline_output["reads_info"],
                                        workspace_name, stored_objects)
