@@ -8,7 +8,7 @@ from pprint import pprint  # noqa: F401
 from jgi_mg_assembly.jgi_mg_assemblyImpl import jgi_mg_assembly
 from jgi_mg_assembly.jgi_mg_assemblyServer import MethodContext
 from jgi_mg_assembly.authclient import KBaseAuth as _KBaseAuth
-from jgi_mg_assembly.runner.readlength import readlength
+from jgi_mg_assembly.pipeline_steps.readlength import readlength
 
 import util
 
@@ -49,12 +49,28 @@ class jgi_mg_assemblyTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    def test_run_pipeline_ok(self):
+    def test_run_pipeline_default_ok(self):
         # load some data here.
         output = self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
             "reads_upa": self.reads_upa,
             "output_assembly_name": "MyNewAssembly",
-            "workspace_name": util.get_ws_name()
+            "workspace_name": util.get_ws_name(),
+            "debug": 1
+        })[0]
+
+        self.assertIn('report_name', output)
+        self.assertIn('report_ref', output)
+        self.assertIn('assembly_upa', output)
+        pprint(output)
+
+    def test_run_pipeline_no_rqcfilter(self):
+        # load some data here.
+        output = self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+            "reads_upa": self.reads_upa,
+            "output_assembly_name": "MyNewAssembly",
+            "workspace_name": util.get_ws_name(),
+            "skip_rqcfilter": 1,
+            "debug": 1
         })[0]
 
         self.assertIn('report_name', output)

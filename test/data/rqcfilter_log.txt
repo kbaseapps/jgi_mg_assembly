@@ -1,0 +1,377 @@
+Executing jgi.RQCFilter2 [mlf=0.333, maxns=3, removemicrobes=t, minlength=51, rna=f, removecat=t, removehuman=t, clumpify=t, minavgquality=3, trimq=0, removemouse=t, removedog=t, qtrim=r, trimfragadapter=t, khist=t, phix=t, in=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, path=/kb/module/work/tmp/rqcfilter_output_1525807955734, barcodefilter=f, sketch=f, mapk=13, -Xmx24g, rqcfilterdata=/data/RQCFilterData]
+Version 38.00 [mlf=0.333, maxns=3, removemicrobes=t, minlength=51, rna=f, removecat=t, removehuman=t, clumpify=t, minavgquality=3, trimq=0, removemouse=t, removedog=t, qtrim=r, trimfragadapter=t, khist=t, phix=t, in=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, path=/kb/module/work/tmp/rqcfilter_output_1525807955734, barcodefilter=f, sketch=f, mapk=13, -Xmx24g, rqcfilterdata=/data/RQCFilterData]
+
+Executing jgi.BBMerge [overwrite=true, in1=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, outa=/kb/module/work/tmp/rqcfilter_output_1525807955734/adaptersDetected.fa, reads=1m]
+Version 38.00 [overwrite=true, in1=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, outa=/kb/module/work/tmp/rqcfilter_output_1525807955734/adaptersDetected.fa, reads=1m]
+
+Changed from ASCII-33 to ASCII-64 on input quality o (Q111) for base G at lines 1 and 3, position 0 while prescanning.
+Adapters counted: 0
+Total time: 0.121 seconds.
+
+Pairs:               	100
+Joined:              	0       	0.000%
+Ambiguous:           	100       	100.000%
+No Solution:         	0       	0.000%
+Too Short:           	0       	0.000%
+
+Avg Insert:          	NaN
+Standard Deviation:  	0.0
+Mode:                	0
+
+Insert range:        	999999999 - 0
+90th percentile:     	0
+75th percentile:     	0
+50th percentile:     	0
+25th percentile:     	0
+10th percentile:     	0
+Executing clump.Clumpify [pigz=t, unpigz=t, zl=4, reorder, in1=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_CLUMP_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, passes=1]
+Version 38.00 [pigz=t, unpigz=t, zl=4, reorder, in1=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_CLUMP_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, passes=1]
+
+Read Estimate:          489
+Memory Estimate:        0 MB
+Memory Available:       19273 MB
+Set groups to 1
+Executing clump.KmerSort1 [in1=/kb/module/work/tmp/00a60e5c-607b-4567-887a-368814ace761.inter.fastq, in2=, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_CLUMP_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out2=, groups=1, ecco=false, rename=false, shortname=f, unpair=false, repair=false, namesort=false, ow=true, pigz=t, unpigz=t, zl=4, reorder, passes=1]
+
+Making comparator.
+Made a comparator with k=31, seed=1, border=1, hashes=4
+Starting cris 0.
+Fetching reads.
+Making fetch threads.
+Starting threads.
+Waiting for threads.
+Fetch time: 	0.094 seconds.
+Closing input stream.
+Combining thread output.
+Combine time: 	0.000 seconds.
+Sorting.
+Sort time: 	0.001 seconds.
+Making clumps.
+Clump time: 	0.003 seconds.
+Writing.
+Waiting for writing to complete.
+Write time: 	0.010 seconds.
+Done!
+Time:                         	0.224 seconds.
+Reads Processed:           200 	0.89k reads/sec
+Bases Processed:         20000 	0.09m bases/sec
+
+Reads In:                  200
+Clumps Formed:             184
+Total time: 	0.228 seconds.
+Executing jgi.BBDukF [ktrim=r, ordered, minlen=51, minlenfraction=0.333, mink=11, tbo, tpe, rcomp=f, overwrite=true, k=23, hdist=1, hdist2=1, ftm=5, pigz=t, unpigz=t, zl=4, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_CLUMP_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_TRIM_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, rqc=hashmap, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/ktrim_kmerStats1.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/ktrim_scaffoldStats1.txt, loglog, ref=/data/RQCFilterData/adapters2.fa.gz]
+Version 38.00 [ktrim=r, ordered, minlen=51, minlenfraction=0.333, mink=11, tbo, tpe, rcomp=f, overwrite=true, k=23, hdist=1, hdist2=1, ftm=5, pigz=t, unpigz=t, zl=4, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_CLUMP_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_TRIM_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, rqc=hashmap, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/ktrim_kmerStats1.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/ktrim_scaffoldStats1.txt, loglog, ref=/data/RQCFilterData/adapters2.fa.gz]
+
+Set ORDERED to true
+maskMiddle was disabled because useShortKmers=true
+0.081 seconds.
+Initial:
+Memory: max=24696m, total=24696m, free=22505m, used=2191m
+
+Added 431294 kmers; time: 	0.217 seconds.
+Memory: max=24696m, total=24696m, free=21990m, used=2706m
+
+Input is being processed as paired
+Started output streams:	0.005 seconds.
+Processing time:   		0.059 seconds.
+
+Input:                  	200 reads 		20000 bases.
+FTrimmed:               	0 reads (0.00%) 	0 bases (0.00%)
+KTrimmed:               	0 reads (0.00%) 	0 bases (0.00%)
+Trimmed by overlap:     	0 reads (0.00%) 	0 bases (0.00%)
+Low quality discards:   	0 reads (0.00%) 	0 bases (0.00%)
+Total Removed:          	0 reads (0.00%) 	0 bases (0.00%)
+Result:                 	200 reads (100.00%) 	20000 bases (100.00%)
+Unique 31-mers:         	4251
+
+Time:                         	0.298 seconds.
+Reads Processed:         200 	0.67k reads/sec
+Bases Processed:       20000 	0.07m bases/sec
+Adapter Sequence Removed:	0 reads (0.00%)	0 bases (0.00%)
+Executing jgi.BBDukF [maq=5.0,0, trimq=0.0, qtrim=r, ordered, overwrite=true, maxns=3, minlen=51, minlenfraction=0.333, k=31, hdist=1, pigz=t, unpigz=t, zl=6, cf=t, barcodefilter=f, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_TRIM_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER1_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/synth1.fq.gz, rqc=hashmap, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/kmerStats1.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/scaffoldStats1.txt, loglog, ref=/data/RQCFilterData/Illumina.artifacts.fa.gz,/data/RQCFilterData/nextera_LMP_linker.fa.gz,/data/RQCFilterData/phix174_ill.ref.fa.gz,/data/RQCFilterData/lambda.fa.gz,/data/RQCFilterData/pJET1.2.fa.gz]
+Version 38.00 [maq=5.0,0, trimq=0.0, qtrim=r, ordered, overwrite=true, maxns=3, minlen=51, minlenfraction=0.333, k=31, hdist=1, pigz=t, unpigz=t, zl=6, cf=t, barcodefilter=f, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_TRIM_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER1_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/synth1.fq.gz, rqc=hashmap, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/kmerStats1.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/scaffoldStats1.txt, loglog, ref=/data/RQCFilterData/Illumina.artifacts.fa.gz,/data/RQCFilterData/nextera_LMP_linker.fa.gz,/data/RQCFilterData/phix174_ill.ref.fa.gz,/data/RQCFilterData/lambda.fa.gz,/data/RQCFilterData/pJET1.2.fa.gz]
+
+Set ORDERED to true
+0.009 seconds.
+Initial:
+Memory: max=24696m, total=24696m, free=20570m, used=4126m
+
+Added 13085271 kmers; time: 	4.313 seconds.
+Memory: max=24696m, total=24696m, free=18380m, used=6316m
+
+Input is being processed as paired
+Started output streams:	0.219 seconds.
+Processing time:   		0.062 seconds.
+
+Input:                  	200 reads 		20000 bases.
+Contaminants:           	0 reads (0.00%) 	0 bases (0.00%)
+QTrimmed:               	0 reads (0.00%) 	0 bases (0.00%)
+Filtered by header:     	0 reads (0.00%) 	0 bases (0.00%)
+Low quality discards:   	0 reads (0.00%) 	0 bases (0.00%)
+Total Removed:          	0 reads (0.00%) 	0 bases (0.00%)
+Result:                 	200 reads (100.00%) 	20000 bases (100.00%)
+Unique 31-mers:         	4345
+
+Time:                         	4.613 seconds.
+Reads Processed:         200 	0.04k reads/sec
+Bases Processed:       20000 	0.00m bases/sec
+Synthetic Contam Sequence Removed:	0 reads (0.00%)	0 bases (0.00%)
+Executing jgi.BBDukF [ordered, overwrite=true, k=20, hdist=1, pigz=t, unpigz=t, zl=6, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER1_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER2_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/synth2.fq.gz, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/kmerStats2.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/scaffoldStats2.txt, loglog, ref=/data/RQCFilterData/short.fa.gz,/data/RQCFilterData/short.fa.gz]
+Version 38.00 [ordered, overwrite=true, k=20, hdist=1, pigz=t, unpigz=t, zl=6, minavgquality=3, ow=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER1_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, out1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER2_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/synth2.fq.gz, outduk=/kb/module/work/tmp/rqcfilter_output_1525807955734/kmerStats2.txt, stats=/kb/module/work/tmp/rqcfilter_output_1525807955734/scaffoldStats2.txt, loglog, ref=/data/RQCFilterData/short.fa.gz,/data/RQCFilterData/short.fa.gz]
+
+Set ORDERED to true
+0.016 seconds.
+Initial:
+Memory: max=24696m, total=24696m, free=23478m, used=1218m
+
+Added 986 kmers; time: 	0.231 seconds.
+Memory: max=24696m, total=24696m, free=22769m, used=1927m
+
+Input is being processed as paired
+Started output streams:	0.009 seconds.
+Processing time:   		0.027 seconds.
+
+Input:                  	200 reads 		20000 bases.
+Contaminants:           	0 reads (0.00%) 	0 bases (0.00%)
+Low quality discards:   	0 reads (0.00%) 	0 bases (0.00%)
+Total Removed:          	0 reads (0.00%) 	0 bases (0.00%)
+Result:                 	200 reads (100.00%) 	20000 bases (100.00%)
+Unique 31-mers:         	4437
+
+Time:                         	0.283 seconds.
+Reads Processed:         200 	0.71k reads/sec
+Bases Processed:       20000 	0.07m bases/sec
+Short Synthetic Contam Sequence Removed:	0 reads (0.00%)	0 bases (0.00%)
+Loading tax tree.
+13.865 seconds.
+Executing align2.BBMap [tipsearch=20, maxindel=80, minhits=2, bwr=0.18, bw=40, minratio=0.65, midpad=150, minscaf=50, quickmatch=t, rescuemismatches=15, rescuedist=800, maxsites=3, maxsites2=100, ordered, quickmatch, k=13, idtag=t, printunmappedcount, ow=true, qtrim=rl, trimq=10, untrim, build=1, path=/data/RQCFilterData/commonMicrobes/, pigz=t, unpigz=t, zl=6, minid=.95, idfilter=.95, maxindel=3, minhits=2, bw=12, bwr=0.16, maxsites2=10, tipsearch=0, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER2_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outu1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_MICROBE_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/microbes.fq.gz, scafstats=/kb/module/work/tmp/rqcfilter_output_1525807955734/commonMicrobes.txt]
+Version 38.00 [tipsearch=20, maxindel=80, minhits=2, bwr=0.18, bw=40, minratio=0.65, midpad=150, minscaf=50, quickmatch=t, rescuemismatches=15, rescuedist=800, maxsites=3, maxsites2=100, ordered, quickmatch, k=13, idtag=t, printunmappedcount, ow=true, qtrim=rl, trimq=10, untrim, build=1, path=/data/RQCFilterData/commonMicrobes/, pigz=t, unpigz=t, zl=6, minid=.95, idfilter=.95, maxindel=3, minhits=2, bw=12, bwr=0.16, maxsites2=10, tipsearch=0, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_FILTER2_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outu1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_MICROBE_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/microbes.fq.gz, scafstats=/kb/module/work/tmp/rqcfilter_output_1525807955734/commonMicrobes.txt]
+
+Set MINIMUM_ALIGNMENT_SCORE_RATIO to 0.650
+Set OUTPUT_ORDERED_READS to true
+Scaffold statistics will be written to /kb/module/work/tmp/rqcfilter_output_1525807955734/commonMicrobes.txt
+Retaining first best site only for ambiguous mappings.
+Set MINIMUM_ALIGNMENT_SCORE_RATIO to 0.908
+Set genome to 1
+
+Loaded Reference:	3.101 seconds.
+Loading index for chunk 1-1, build 1
+Generated Index:	10.106 seconds.
+Analyzed Index:   	5.569 seconds.
+Started output stream:	0.007 seconds.
+Started output stream:	0.003 seconds.
+Creating scaffold statistics table:   	0.001 seconds.
+Cleared Memory:    	13.417 seconds.
+Processing reads in paired-ended mode.
+Started read stream.
+Started 4 mapping threads.
+Detecting finished threads: 0, 1, 2, 3
+
+   ------------------   Results   ------------------   
+
+Genome:                	1
+Key Length:            	13
+Max Indel:             	3
+Minimum Score Ratio:  	0.9081
+Mapping Mode:         	normal
+Reads Used:           	200	(20000 bases)
+
+Mapping:          	0.770 seconds.
+Reads/sec:       	259.73
+kBases/sec:      	25.97
+
+
+Pairing data:   	pct pairs	num pairs 	pct bases	   num bases
+
+mated pairs:     	  0.0000% 	        0 	  0.0000% 	           0
+bad pairs:       	  0.0000% 	        0 	  0.0000% 	           0
+insert size avg: 	     NaN
+unmapped:        	100.0000% 	      200 	100.0000% 	       20000
+
+
+Read 1 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  0.0000% 	        0 	  0.0000% 	           0
+unambiguous:     	  0.0000% 	        0 	  0.0000% 	           0
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  0.0000% 	        0 	  0.0000% 	           0
+semiperfect site:	  0.0000% 	        0 	  0.0000% 	           0
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	     NaN% 	           0
+Error Rate:      	     NaN% 	        0 	     NaN% 	           0
+Sub Rate:        	     NaN% 	        0 	     NaN% 	           0
+Del Rate:        	     NaN% 	        0 	     NaN% 	           0
+Ins Rate:        	     NaN% 	        0 	     NaN% 	           0
+N Rate:          	     NaN% 	        0 	     NaN% 	           0
+
+
+Read 2 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  0.0000% 	        0 	  0.0000% 	           0
+unambiguous:     	  0.0000% 	        0 	  0.0000% 	           0
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  0.0000% 	        0 	  0.0000% 	           0
+semiperfect site:	  0.0000% 	        0 	  0.0000% 	           0
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	     NaN% 	           0
+Error Rate:      	     NaN% 	        0 	     NaN% 	           0
+Sub Rate:        	     NaN% 	        0 	     NaN% 	           0
+Del Rate:        	     NaN% 	        0 	     NaN% 	           0
+Ins Rate:        	     NaN% 	        0 	     NaN% 	           0
+N Rate:          	     NaN% 	        0 	     NaN% 	           0
+
+Total time:     	33.049 seconds.
+Microbial Sequence Removed:	0 reads (0.00%)	0 bases (0.00%)
+Executing align2.BBSplitter [ordered=false, k=13, idtag=t, usemodulo, printunmappedcount, ow=true, qtrim=rl, trimq=10, untrim, kfilter=25, maxsites=1, tipsearch=0, minratio=.9, maxindel=3, minhits=2, bw=12, bwr=0.16, fast=true, maxsites2=10, build=1, ef=0.03, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/human.fq.gz, path=/data/RQCFilterData/mousecatdoghuman/, refstats=/kb/module/work/tmp/rqcfilter_output_1525807955734/refStats.txt, pigz=t, unpigz=t, zl=9, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_MICROBE_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outu1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz]
+
+Merged reference file /data/RQCFilterData/mousecatdoghuman/ref/genome/1/merged_ref_1682110183708951285.fa.gz already exists; skipping merge.
+Ref merge time:     	0.029 seconds.
+Executing align2.BBMap [tipsearch=20, maxindel=80, minhits=2, bwr=0.18, bw=40, minratio=0.65, midpad=150, minscaf=50, quickmatch=t, rescuemismatches=15, rescuedist=800, maxsites=3, maxsites2=100, ordered=false, k=13, idtag=t, usemodulo, printunmappedcount, ow=true, qtrim=rl, trimq=10, untrim, kfilter=25, maxsites=1, tipsearch=0, minratio=.9, maxindel=3, minhits=2, bw=12, bwr=0.16, maxsites2=10, build=1, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/human.fq.gz, refstats=/kb/module/work/tmp/rqcfilter_output_1525807955734/refStats.txt, pigz=t, unpigz=t, zl=9, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_MICROBE_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outu1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, ref=/data/RQCFilterData/mousecatdoghuman/ref/genome/1/merged_ref_1682110183708951285.fa.gz]
+Version 38.00 [tipsearch=20, maxindel=80, minhits=2, bwr=0.18, bw=40, minratio=0.65, midpad=150, minscaf=50, quickmatch=t, rescuemismatches=15, rescuedist=800, maxsites=3, maxsites2=100, ordered=false, k=13, idtag=t, usemodulo, printunmappedcount, ow=true, qtrim=rl, trimq=10, untrim, kfilter=25, maxsites=1, tipsearch=0, minratio=.9, maxindel=3, minhits=2, bw=12, bwr=0.16, maxsites2=10, build=1, outm=/kb/module/work/tmp/rqcfilter_output_1525807955734/human.fq.gz, refstats=/kb/module/work/tmp/rqcfilter_output_1525807955734/refStats.txt, pigz=t, unpigz=t, zl=9, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/TEMP_MICROBE_42406de34260ef1d99511c413dedca_00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, outu1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, ref=/data/RQCFilterData/mousecatdoghuman/ref/genome/1/merged_ref_1682110183708951285.fa.gz]
+
+Set MINIMUM_ALIGNMENT_SCORE_RATIO to 0.650
+Set OUTPUT_ORDERED_READS to false
+Set MINIMUM_ALIGNMENT_SCORE_RATIO to 0.900
+Reference set statistics will be written to /kb/module/work/tmp/rqcfilter_output_1525807955734/refStats.txt
+Retaining first best site only for ambiguous mappings.
+NOTE:	Ignoring reference file because it already appears to have been processed.
+NOTE:	If you wish to regenerate the index, please manually delete /data/RQCFilterData/mousecatdoghuman/ref/genome/1/summary.txt
+Set genome to 1
+
+Loaded Reference:	73.154 seconds.
+Loading index for chunk 1-23, build 1
+Generated Index:	106.104 seconds.
+Analyzed Index:   	13.707 seconds.
+Started output stream:	0.005 seconds.
+Started output stream:	0.043 seconds.
+Creating ref-set statistics table:    	0.002 seconds.
+Cleared Memory:    	3.611 seconds.
+Processing reads in paired-ended mode.
+Started read stream.
+Started 4 mapping threads.
+Detecting finished threads: 0, 1, 2, 3
+
+   ------------------   Results   ------------------   
+
+Genome:                	1
+Key Length:            	13
+Max Indel:             	3
+Minimum Score Ratio:  	0.9
+Mapping Mode:         	normal
+Reads Used:           	200	(20000 bases)
+
+Mapping:          	0.616 seconds.
+Reads/sec:       	324.43
+kBases/sec:      	32.44
+
+
+Pairing data:   	pct pairs	num pairs 	pct bases	   num bases
+
+mated pairs:     	  0.0000% 	        0 	  0.0000% 	           0
+bad pairs:       	  0.0000% 	        0 	  0.0000% 	           0
+insert size avg: 	     NaN
+unmapped:        	100.0000% 	      200 	100.0000% 	       20000
+
+
+Read 1 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  0.0000% 	        0 	  0.0000% 	           0
+unambiguous:     	  0.0000% 	        0 	  0.0000% 	           0
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  0.0000% 	        0 	  0.0000% 	           0
+semiperfect site:	  0.0000% 	        0 	  0.0000% 	           0
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	     NaN% 	           0
+Error Rate:      	     NaN% 	        0 	     NaN% 	           0
+Sub Rate:        	     NaN% 	        0 	     NaN% 	           0
+Del Rate:        	     NaN% 	        0 	     NaN% 	           0
+Ins Rate:        	     NaN% 	        0 	     NaN% 	           0
+N Rate:          	     NaN% 	        0 	     NaN% 	           0
+
+
+Read 2 data:      	pct reads	num reads 	pct bases	   num bases
+
+mapped:          	  0.0000% 	        0 	  0.0000% 	           0
+unambiguous:     	  0.0000% 	        0 	  0.0000% 	           0
+ambiguous:       	  0.0000% 	        0 	  0.0000% 	           0
+low-Q discards:  	  0.0000% 	        0 	  0.0000% 	           0
+
+perfect best site:	  0.0000% 	        0 	  0.0000% 	           0
+semiperfect site:	  0.0000% 	        0 	  0.0000% 	           0
+rescued:         	  0.0000% 	        0
+
+Match Rate:      	      NA 	       NA 	     NaN% 	           0
+Error Rate:      	     NaN% 	        0 	     NaN% 	           0
+Sub Rate:        	     NaN% 	        0 	     NaN% 	           0
+Del Rate:        	     NaN% 	        0 	     NaN% 	           0
+Ins Rate:        	     NaN% 	        0 	     NaN% 	           0
+N Rate:          	     NaN% 	        0 	     NaN% 	           0
+
+Total time:     	197.284 seconds.
+Human Sequence Removed:	0 reads (0.00%)	0 bases (0.00%)
+Executing jgi.BBMerge [loose, overwrite=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, ihist=/kb/module/work/tmp/rqcfilter_output_1525807955734/ihist_merge.txt, outc=/kb/module/work/tmp/rqcfilter_output_1525807955734/cardinality.txt, pigz=t, unpigz=t, zl=9, adapters=/data/RQCFilterData/adapters2.fa.gz, mininsert=25]
+Version 38.00 [loose, overwrite=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, ihist=/kb/module/work/tmp/rqcfilter_output_1525807955734/ihist_merge.txt, outc=/kb/module/work/tmp/rqcfilter_output_1525807955734/cardinality.txt, pigz=t, unpigz=t, zl=9, adapters=/data/RQCFilterData/adapters2.fa.gz, mininsert=25]
+
+Revised arguments: [minoverlap=8, minoverlap0=9, qualiters=4, mismatches=3, margin=2, ratiooffset=0.4, minsecondratio=0.08, maxratio=0.11, ratiomargin=4.7, ratiominoverlapreduction=2, pfilter=0.00002, efilter=8, minentropy=30, minapproxoverlap=30, overwrite=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, ihist=/kb/module/work/tmp/rqcfilter_output_1525807955734/ihist_merge.txt, outc=/kb/module/work/tmp/rqcfilter_output_1525807955734/cardinality.txt, pigz=t, unpigz=t, zl=9, adapters=/data/RQCFilterData/adapters2.fa.gz, mininsert=25]
+
+Total time: 0.044 seconds.
+
+Pairs:               	100
+Joined:              	0       	0.000%
+Ambiguous:           	100       	100.000%
+No Solution:         	0       	0.000%
+Too Short:           	0       	0.000%
+Adapters Expected:   	0       	0.000%
+Adapters Found:      	0       	0.000%
+
+Avg Insert:          	NaN
+Standard Deviation:  	0.0
+Mode:                	0
+
+Insert range:        	999999999 - 0
+90th percentile:     	0
+75th percentile:     	0
+50th percentile:     	0
+25th percentile:     	0
+10th percentile:     	0
+cardinality=4434, capacity=1437258619
+Executing jgi.KmerCountExact [overwrite=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, khist=/kb/module/work/tmp/rqcfilter_output_1525807955734/khist.txt, peaks=/kb/module/work/tmp/rqcfilter_output_1525807955734/peaks.txt, unpigz=t]
+
+Initial:
+Memory: max=24696m, total=24696m, free=23792m, used=904m
+
+Executing kmer.KmerTableSet [overwrite=true, in1=/kb/module/work/tmp/rqcfilter_output_1525807955734/00a60e5c-607b-4567-887a-368814ace761.inter.anqdpht.fastq.gz, khist=/kb/module/work/tmp/rqcfilter_output_1525807955734/khist.txt, peaks=/kb/module/work/tmp/rqcfilter_output_1525807955734/peaks.txt, unpigz=t]
+
+Initial:
+Ways=31, initialSize=128000, prefilter=f, prealloc=f
+Memory: max=24696m, total=24696m, free=23792m, used=904m
+
+Estimated kmer capacity: 	958172413
+0.014 seconds.
+After table allocation:
+Memory: max=24696m, total=24696m, free=23725m, used=971m
+
+After loading:
+Memory: max=24696m, total=24696m, free=23532m, used=1164m
+
+Input:                      	200 reads 		20000 bases.
+
+For K=31
+Unique Kmers:               	12535
+Average Kmer Count:         	1.117
+Estimated Kmer Depth:       	0.215
+Estimated Read Depth:       	0.307
+
+Load Time:                  	0.065 seconds.
+Histogram Write Time:       	0.054 seconds.
+
+Overall Time: 	256.878 seconds.

@@ -5,11 +5,12 @@ from BBTools.BBToolsClient import BBTools
 from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
-from readlength import readlength
+from jgi_mg_assembly.pipeline_steps.readlength import readlength
+from jgi_mg_assembly.pipeline_steps.rqcfilter import RQCFilterRunner
+from jgi_mg_assembly.pipeline_steps.spades import SpadesRunner
 
 BFC = "/kb/module/bin/bfc"
 SEQTK = "/kb/module/bin/seqtk"
-SPADES = "/opt/SPAdes-3.12.0-Linux/bin/spades.py"
 BBTOOLS_STATS = "/kb/module/bbmap/stats.sh"
 BBMAP = "/kb/module/bbmap/bbmap.sh"
 PIGZ = "pigz"
@@ -37,11 +38,15 @@ class Pipeline(object):
         3. Run the Pipeline script as provided by JGI.
         """
         self._validate_params(params)
+        options = {
+            "skip_rqcfilter": True if params.get("skip_rqcfilter") else False,
+            "debug": True if params.get("debug") else False
+        }
 
         # Fetch reads files
         files = self.file_util.fetch_reads_files([params["reads_upa"]])
         reads_files = list(files.values())
-        pipeline_output = self._run_assembly_pipeline(reads_files[0])
+        pipeline_output = self._run_assembly_pipeline(reads_files[0], options)
 
         stored_objects = self._upload_pipeline_result(
             pipeline_output, params["workspace_name"], params["output_assembly_name"]
@@ -78,7 +83,7 @@ class Pipeline(object):
                 print(error)
             raise ValueError("Errors found in app parameters! See above for details.")
 
-    def _run_assembly_pipeline(self, files):
+    def _run_assembly_pipeline(self, files, options):
         """
         Takes in the output from RQCFilter (the output directory and reads file as a dict) and
         runs the remaining steps in the JGI assembly pipeline.
@@ -96,17 +101,37 @@ class Pipeline(object):
         reporting)
         """
 
+        # get reads info on the base input.
         pre_filter_reads_info = readlength(files,
                                            os.path.join(self.output_dir, "pre_filter_readlen.txt"))
-        rqc_output = self._run_rqcfilter(files)
+
+        # run RQCFilter
+        rqcfilter = RQCFilterRunner(self.callback_url, self.scratch_dir, options)
+        rqc_output = rqcfilter.run(files)
+
+        # get info on the filtered reads
         filtered_reads_info = readlength(rqc_output["filtered_fastq_file"],
                                          os.path.join(self.output_dir, "filtered_readlen.txt"))
-        bfc_output = self._run_bfc_seqtk(rqc_output)
+
+        # run BFC on the filtered reads
+        bfc_output = self._run_bfc_seqtk(rqc_output, options)
+
+        # get info on the filtered/corrected reads
         corrected_reads_info = readlength(bfc_output["unzipped"],
                                           os.path.join(self.output_dir, "corrected_readlen.txt"))
-        spades_output = self._run_spades(bfc_output["zipped"], corrected_reads_info)
-        agp_output = self._create_agp_file(spades_output)
+
+        # assemble the filtered/corrected reads with spades
+        spades = SpadesRunner(self.output_dir, self.scratch_dir)
+        spades_output_dir = spades.run(bfc_output["zipped"], corrected_reads_info, {})
+        # spades_output = self._run_spades(bfc_output["zipped"], corrected_reads_info)
+
+
+        agp_output = self._create_agp_file(spades_output_dir)
+
+        # build up the assembly stats
         stats_output = self._run_assembly_stats(agp_output["scaffolds"])
+
+        # map reads to scaffolds with BBMap
         bbmap_output = self._run_bbmap(
             agp_output["scaffolds"],
             bfc_output["zipped"],
@@ -114,7 +139,7 @@ class Pipeline(object):
         )
 
         return_dict = self._format_outputs(
-            rqc_output, bfc_output, spades_output, agp_output, stats_output, bbmap_output
+            rqc_output, bfc_output, spades_output_dir, agp_output, stats_output, bbmap_output
         )
         return_dict["reads_info"] = {
             "pre_filter": pre_filter_reads_info,
@@ -123,41 +148,7 @@ class Pipeline(object):
         }
         return return_dict
 
-    def _run_rqcfilter(self, reads_file):
-        """
-        Runs RQCFilter as a first pass.
-        This just calls out to BBTools.run_RQCFilter_local and returns the result.
-        result = dictionary with three keys -
-            output_directory = path to the output directory
-            filtered_fastq_file = as it says, gzipped
-            run_log = path to the stderr log from RQCFilter
-        """
-        print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
-        bbtools = BBTools(self.callback_url, service_ver='beta')
-        result = bbtools.run_RQCFilter_local({
-            "reads_file": reads_file
-        }, {
-            "rna": 0,
-            "trimfragadapter": 1,
-            "qtrim": "r",
-            "trimq": 0,
-            "maxns": 3,
-            "minavgquality": 3,
-            "minlength": 51,
-            "mlf": 0.333,
-            "phix": 1,
-            "removehuman": 1,
-            "removedog": 1,
-            "removecat": 1,
-            "removemouse": 1,
-            "khist": 1,
-            "removemicrobes": 1,
-            "clumpify": 1
-        })
-        print("Done running RQCFilter")
-        return result
-
-    def _run_bfc_seqtk(self, input_file):
+    def _run_bfc_seqtk(self, input_file, options):
         """
         Takes in an input file, returns path to output file.
         """
@@ -168,7 +159,8 @@ class Pipeline(object):
         zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")
         bfc_cmd = [BFC, "-1", "-k", "21", "-t", "10"]
 
-        bfc_cmd = bfc_cmd + ["-s", "10g"]
+        if not options.get("debug"):
+            bfc_cmd = bfc_cmd + ["-s", "10g"]
         bfc_cmd = bfc_cmd + [input_file["filtered_fastq_file"], ">", bfc_output_file]
 
         print("Running BFC with command:")
@@ -192,34 +184,6 @@ class Pipeline(object):
             "zipped": zipped_output
         }
 
-    def _run_spades(self, input_file, reads_info):
-        """
-        Runs spades, returns the generated output directory name. It's full of standard files.
-        This will use (by default) k=33,55,77,99,127.
-        However, if the max read length < any of those k, that'll be omitted.
-        For example, if your input reads are such that the longest one is 100 bases, this'll
-        omit k=127.
-        """
-        spades_output_dir = os.path.join(self.output_dir, "spades", "spades3")
-        mkdir(spades_output_dir)
-
-        spades_kmers = [33, 55, 77, 99, 127]
-        used_kmers = [k for k in spades_kmers if k <= reads_info["avg"]]
-
-        spades_cmd = [SPADES, "--only-assembler", "-k", ",".join(map(str, used_kmers)), "--meta", "-t", "32",
-                      "-m", "2000", "-o", spades_output_dir, "--12", input_file]
-
-        print("SPAdes input reads info:")
-        print(reads_info)
-        print("Running SPAdes with command:")
-        print(" ".join(spades_cmd))
-        p = subprocess.Popen(spades_cmd, cwd=self.scratch_dir, shell=False)
-        retcode = p.wait()
-        if retcode != 0:
-            raise RuntimeError("Error while running SPAdes!")
-        print("Done running SPAdes")
-        return spades_output_dir
-
     def _create_agp_file(self, spades_dir):
         """
         Runs bbmap/fungalrelease.sh to build AGP files and do some mapping and cleanup.
@@ -229,6 +193,9 @@ class Pipeline(object):
         agp - AGP file
         legend - legend for generated scaffolds
         """
+        in_scaffolds = os.path.join(spades_dir, "scaffolds.fasta")
+        if not os.path.exists(in_scaffolds):
+            raise RuntimeError("No scaffolds file generated from SPAdes! Expected {} to exist!".format(in_scaffolds))
         agp_dir = os.path.join(self.output_dir, "createAGPfile")
         mkdir(agp_dir)
         out_scaffolds = os.path.join(agp_dir, "assembly.scaffolds.fasta")
@@ -335,18 +302,18 @@ class Pipeline(object):
             "stats": bbmap_stats_output
         }
 
-    def _format_outputs(self, rqc_output, bfc_output, spades_output, agp_output, stats_output, bbmap_output):
+    def _format_outputs(self, rqc_output, bfc_output, spades_output_dir, agp_output, stats_output, bbmap_output):
         """
         rqc_output = single file, qc / filtered reads
         bfc_output = single file, gzipped filtered reads
-        spades_output = directory, with (needed files) contigs.fasta, scaffolds.fasta
+        spades_output_dir = directory, with (needed files) contigs.fasta, scaffolds.fasta
         agp_output = dict with keys->files for keys scaffolds, contigs, agp, and legend
         stats_output = dict with keys->files for stats_tsv, stats_file
         bbmap_output = dict with objects stats_file, map_file (SAM), and coverage.
 
         This reformats all of those into a single dict. Might do some other cleanup later.
         """
-        return {
+        output_files = {
             "scaffolds": agp_output["scaffolds"],
             "contigs": agp_output["contigs"],
             "mapping": bbmap_output["map_file"],
@@ -354,8 +321,18 @@ class Pipeline(object):
             "bbmap_stats": bbmap_output["stats"],
             "assembly_stats": stats_output["stats_file"],
             "assembly_tsv": stats_output["stats_tsv"],
-            "rqcfilter_log": rqc_output["run_log"]
+            "rqcfilter_log": rqc_output["run_log"],
         }
+        spades_log = os.path.join(spades_output_dir, "spades.log")
+        if os.path.exists(spades_log):
+            output_files["spades_log"] = spades_log
+        spades_warnings = os.path.join(spades_output_dir, "warnings.log")
+        if os.path.exists(spades_warnings):
+            output_files["spades_warnings"] = spades_warnings
+        spades_params = os.path.join(spades_output_dir, "params.txt")
+        if os.path.exists(spades_params):
+            output_files["spades_params"] = spades_params
+        return output_files
 
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
         uploaded_upa = self.file_util.upload_assembly(

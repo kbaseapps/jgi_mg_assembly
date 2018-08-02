@@ -27,6 +27,9 @@ class ReportUtil(object):
         * assembly_stats - stats from the assembly (made with BBTools stats.sh)
         * assembly_tsv - a TSV version of most of those stats (with some funky headers)
         * rqcfilter_log - a text file with the run log from RQCFilter
+        * spades_log - the spades.log file, if available (optional)
+        * spades_warning - the warnings.log file from SPAdes, if available(optional)
+        * spades_params - the params.txt file from SPAdes, if available(optional)
 
         reads_info is another dict, with reads counted at different points in the pipeline
         These are all expected to be results of runner.readlength.readlength. So they're all
