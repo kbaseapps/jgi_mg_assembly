@@ -33,7 +33,7 @@ module jgi_mg_assembly {
         reads_upa reads_upa;
         string workspace_name;
         string output_assembly_name;
-        boolean skip_rqc_filter;
+        boolean skip_rqcfilter;
         boolean debug;
     } AssemblyPipelineParams;
 

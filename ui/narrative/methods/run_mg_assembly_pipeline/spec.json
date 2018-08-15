@@ -37,6 +37,18 @@
                     "KBaseGenomeAnnotations.Assembly"
                 ]
             }
+        },
+        {
+            "id": "skip_rqcfilter",
+            "optional": false,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [0],
+            "field_type": "checkbox",
+            "checkbox_options": {
+                "checked_value": 1,
+                "unchecked_value": 0
+            }
         }
     ],
     "behavior": {
@@ -57,6 +69,10 @@
                 {
                     "input_parameter": "output_assembly_name",
                     "target_property": "output_assembly_name"
+                },
+                {
+                    "input_parameter": "skip_rqcfilter",
+                    "target_property": "skip_rqcfilter"
                 }
             ],
             "output_mapping": [

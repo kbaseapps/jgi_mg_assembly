@@ -37,6 +37,11 @@ parameters :
             Assembly Output
         short-hint : |
             The name of the assembled output
+    skip_rqcfilter:
+        ui-name: |
+            Skip RQCFilter Step
+        short-hint: |
+            If selected, skips running the RQCFilter step of the pipeline, which filters out adapters, low quality reads, etc. See the catalog page for details.
 
 description : |
     <p>
