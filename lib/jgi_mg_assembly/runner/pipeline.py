@@ -18,7 +18,6 @@ PIGZ = "pigz"
 
 
 class Pipeline(object):
-
     def __init__(self, callback_url, scratch_dir):
         """
         Initialize a few things. Starting points, paths, etc.
@@ -159,7 +158,7 @@ class Pipeline(object):
             },
             "rqcfilter": rqc_output,
             "bfc": bfc_output,
-            "seqtk": seqtk_output
+            "seqtk": seqtk_output,
             "spades": spades_output,
             "agp": agp_output,
             "stats": stats_output,
