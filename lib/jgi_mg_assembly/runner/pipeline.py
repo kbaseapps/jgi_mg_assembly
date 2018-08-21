@@ -7,14 +7,14 @@ from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
 from jgi_mg_assembly.pipeline_steps.readlength import readlength
 from jgi_mg_assembly.pipeline_steps.rqcfilter import RQCFilterRunner
+from jgi_mg_assembly.pipeline_steps.bfc import BFCRunner
+from jgi_mg_assembly.pipeline_steps.seqtk import SeqtkRunner
 from jgi_mg_assembly.pipeline_steps.spades import SpadesRunner
+from jgi_mg_assembly.pipeline_steps.agp import AgpRunner
+from jgi_mg_assembly.pipeline_steps.assemblystats import StatsRunner
+from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 
-BFC = "/kb/module/bin/bfc"
-SEQTK = "/kb/module/bin/seqtk"
-BBTOOLS_STATS = "/kb/module/bbmap/stats.sh"
-BBMAP = "/kb/module/bbmap/bbmap.sh"
 PIGZ = "pigz"
-AGP_FILE_TOOL = "/kb/module/bbmap/fungalrelease.sh"
 
 
 class Pipeline(object):
@@ -56,7 +56,6 @@ class Pipeline(object):
         report_info = self._build_and_upload_report(pipeline_output,
                                                     stored_objects,
                                                     params["workspace_name"])
-
         return {
             "report_name": report_info["report_name"],
             "report_ref": report_info["report_ref"],
@@ -85,256 +84,87 @@ class Pipeline(object):
 
     def _run_assembly_pipeline(self, files, options):
         """
-        Takes in the output from RQCFilter (the output directory and reads file as a dict) and
-        runs the remaining steps in the JGI assembly pipeline.
-        steps:
-        0. run RQCfilter
-        1. run bfc on output file from rqc filter with params
-            -1 -s 10g -k 21 -t 10
-        2. use seqtk to remove singleton reads
-        3. run spades on that output with params
-            -m 2000 --only-assembler -k 33,55,77,99,127 --meta -t 32
-        4. compile assembly stats with bbmap/stats.sh
-        5. run bbmap to map the reads onto the assembly with params ambiguous=random
-
-        return the resulting file paths (just care about contigs file in v0, might use others for
-        reporting)
+        Runs the complete JGI assembly pipeline and returns all the outputs from each step.
+        1. Get initial reads info.
+        2. RQCFilter.
+        3. Get filtered reads info.
+        4. BFC
+        5. SeqTK
+        6. Get corrected reads info.
+        7. SPAdes
+        8. AGP file / etc. with fungalrelease.sh
+        9. Assembly stats.
+        10. BBMap.
+        11. Return structure with resulting files and objects.
         """
-
         # get reads info on the base input.
-        pre_filter_reads_info = readlength(files,
-                                           os.path.join(self.output_dir, "pre_filter_readlen.txt"))
+        reads_info_initial = readlength(files,
+                                        os.path.join(self.output_dir, "pre_filter_readlen.txt"))
 
         # run RQCFilter
+        # keys: output_directory, filtered_fastq_file, run_log
         rqcfilter = RQCFilterRunner(self.callback_url, self.scratch_dir, options)
         rqc_output = rqcfilter.run(files)
 
         # get info on the filtered reads
-        filtered_reads_info = readlength(rqc_output["filtered_fastq_file"],
+        reads_info_filtered = readlength(rqc_output["filtered_fastq_file"],
                                          os.path.join(self.output_dir, "filtered_readlen.txt"))
 
         # run BFC on the filtered reads
-        bfc_output = self._run_bfc_seqtk(rqc_output, options)
+        # keys: corrected_reads, command
+        bfc = BFCRunner(self.scratch_dir, self.output_dir)
+        bfc_output = bfc.run(rqc_output["filtered_fastq_file"], debug=options.get("debug"))
+
+        # run SeqTK on the corrected reads to remove the stray single ended ones
+        # keys: cleaned_reads (note that they're zipped!), command
+        seqtk = SeqtkRunner(self.scratch_dir, self.output_dir)
+        seqtk_output = seqtk.run(bfc_output["corrected_reads"])
 
         # get info on the filtered/corrected reads
-        corrected_reads_info = readlength(bfc_output["unzipped"],
+        reads_info_corrected = readlength(seqtk_output["cleaned_reads"],
                                           os.path.join(self.output_dir, "corrected_readlen.txt"))
 
         # assemble the filtered/corrected reads with spades
-        spades = SpadesRunner(self.output_dir, self.scratch_dir)
-        spades_output_dir = spades.run(bfc_output["zipped"], corrected_reads_info, {})
+        # keys:
+        # * output_dir
+        # * command
+        # * run_log
+        # * params_log
+        # * warnings_log -- if exists
+        # * scaffolds_file -- if exists
+        # * contigs_file -- if exists
+        spades = SpadesRunner(self.scratch_dir, self.output_dir)
+        spades_output = spades.run(seqtk_output["cleaned_reads"], reads_info_corrected, {})
 
-        # build up the assembly stats
-        agp_output = self._create_agp_file(spades_output_dir)
-        stats_output = self._run_assembly_stats(agp_output["scaffolds"])
+        # Polish the scaffolds and get an agp file (and legend)
+        # keys: scaffolds, contigs, agp, legend (all file paths)
+        agp = AgpRunner(self.scratch_dir, self.output_dir)
+        agp_output = agp.run(spades_output.get("scaffolds_file"))
 
-        # map reads to scaffolds with BBMap
-        bbmap_output = self._run_bbmap(
-            bfc_output["zipped"],
-            agp_output["contigs"]
-        )
+        # Use BBMap to build up the assembly stats
+        # keys: stats_tsv, stats_txt, stats_err
+        stats_runner = StatsRunner(self.scratch_dir, self.output_dir)
+        stats_output = stats_runner.run(agp_output["scaffolds_file"])
 
-        return_dict = self._format_outputs(
-            rqc_output, bfc_output, spades_output_dir, agp_output, stats_output, bbmap_output
-        )
-        return_dict["reads_info"] = {
-            "pre_filter": pre_filter_reads_info,
-            "filtered": filtered_reads_info,
-            "corrected": corrected_reads_info
+        # Map the filtered (not corrected / cleaned) reads to the assembled contigs with BBMap
+        # keys: map_file, coverage_file, stats_file
+        bbmap_runner = BBMapRunner(self.scratch_dir, self.output_dir)
+        bbmap_output = bbmap_runner.run(rqc_output["filtered_fastq_file"], spades_output["contigs_file"])
+
+        return_dict = {
+            "reads_info": {
+                "pre_filter": reads_info_initial,
+                "filtered": reads_info_filtered,
+                "corrected": reads_info_corrected
+            },
+            "rqcfilter": rqc_output,
+            "bfc": bfc_output,
+            "spades": spades_output,
+            "agp": agp_output,
+            "stats": stats_output,
+            "bbmap": bbmap_output
         }
         return return_dict
-
-    def _run_bfc_seqtk(self, input_file, options):
-        """
-        Takes in an input file, returns path to output file.
-        """
-        # command:
-        # bfc <flag params> input_file["filtered_fastq_file"]
-        mkdir(os.path.join(self.output_dir, "bfc"))
-        bfc_output_file = os.path.join(self.output_dir, "bfc", "bfc_output.fastq")
-        zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")
-        bfc_cmd = [BFC, "-1", "-k", "21", "-t", "10"]
-
-        if not options.get("debug"):
-            bfc_cmd = bfc_cmd + ["-s", "10g"]
-        bfc_cmd = bfc_cmd + [input_file["filtered_fastq_file"], ">", bfc_output_file]
-
-        print("Running BFC with command:")
-        print(" ".join(bfc_cmd))
-        p = subprocess.Popen(" ".join(bfc_cmd), cwd=self.scratch_dir, shell=True)
-        retcode = p.wait()
-        if retcode != 0:
-            raise RuntimeError("Error while running BFC!")
-        print("Done running BFC")
-
-        # next, pipe the output to seqtk and pigz
-        seqtk_cmd = [SEQTK, "dropse", bfc_output_file, "|", PIGZ,
-                     "-c", "-", "-p", "4", "-2", ">", zipped_output]
-        p = subprocess.Popen(" ".join(seqtk_cmd), cwd=self.scratch_dir, shell=True)
-        retcode = p.wait()
-        if p.returncode != 0:
-            raise RuntimeError("Error while running seqtk!")
-
-        return {
-            "unzipped": bfc_output_file,
-            "zipped": zipped_output
-        }
-
-    def _create_agp_file(self, spades_dir):
-        """
-        Runs bbmap/fungalrelease.sh to build AGP files and do some mapping and cleanup.
-        Returns a dictionary where values are paths to files and keys are the following:
-        scaffolds - mapped scaffolds fasta file
-        contigs - mapped contigs fasta file
-        agp - AGP file
-        legend - legend for generated scaffolds
-        """
-        in_scaffolds = os.path.join(spades_dir, "scaffolds.fasta")
-        if not os.path.exists(in_scaffolds):
-            has_contigs = os.path.exists(os.path.join(spades_dir, "contigs.fasta"))
-            err_str = "SPAdes did not generate a scaffolds file - expected to see {}".format(in_scaffolds)
-            if not has_contigs:
-                err_str = err_str + "\nSPAdes also did not produce a contigs file. This means that either SPAdes finished incorrectly, or your reads were unable to be assembled. Check the Job Status tab for SPAdes details."
-            else:
-                err_str = err_str + "\nThis might mean that your reads were unable to be assembled properly, or were over-filtered. Check the Job Status tab for details. The log segment before running SPAdes should show details about the corrected reads used in assembly."
-            err_str = err_str + "\nUnable to continue running pipeline!"
-            raise RuntimeError(err_str)
-        agp_dir = os.path.join(self.output_dir, "createAGPfile")
-        mkdir(agp_dir)
-        out_scaffolds = os.path.join(agp_dir, "assembly.scaffolds.fasta")
-        out_contigs = os.path.join(agp_dir, "assembly.contigs.fasta")
-        out_agp = os.path.join(agp_dir, "assembly.agp")
-        out_legend = os.path.join(agp_dir, "assembly.scaffolds.legend")
-        agp_file_cmd = [
-            AGP_FILE_TOOL,
-            "-Xmx40g",
-            "in={}".format(os.path.join(spades_dir, "scaffolds.fasta")),
-            "out={}".format(out_scaffolds),
-            "outc={}".format(out_contigs),
-            "agp={}".format(out_agp),
-            "legend={}".format(out_legend),
-            "mincontig=200",
-            "minscaf=200",
-            "sortscaffolds=t",
-            "sortcontigs=t",
-            "overwrite=t"
-        ]
-        print("Creating AGP file with command:")
-        print(" ".join(agp_file_cmd))
-        p = subprocess.Popen(agp_file_cmd, cwd=self.scratch_dir, shell=False)
-        retcode = p.wait()
-        if retcode != 0:
-            raise RuntimeError("Error while creating AGP file!")
-        print("Done creating AGP file")
-        return {
-            "scaffolds": out_scaffolds,
-            "contigs": out_contigs,
-            "agp": out_agp,
-            "legend": out_legend
-        }
-
-    def _run_assembly_stats(self, scaffold_file):
-        stats_output_dir = os.path.join(self.output_dir, "assembly_stats")
-        mkdir(stats_output_dir)
-        stats_output = os.path.join(stats_output_dir, "assembly.scaffolds.fasta.stats.tsv")
-        stats_stdout = os.path.join(stats_output_dir, "assembly.scaffolds.fasta.stats.txt")
-        stats_stderr = os.path.join(stats_output_dir, "stderr.out")
-        stats_cmd = [
-            BBTOOLS_STATS,
-            "format=6",
-            "in={}".format(scaffold_file),
-            "1>",
-            stats_output,
-            "2>",
-            stats_stderr,
-            "&&",
-            BBTOOLS_STATS,
-            "in={}".format(scaffold_file),
-            "1>",
-            stats_stdout,
-            "2>>",
-            stats_stderr
-        ]
-        print("Running BBTools stats.sh with command:")
-        print(" ".join(stats_cmd))
-        p = subprocess.Popen(stats_cmd, cwd=self.scratch_dir, shell=False)
-        retcode = p.wait()
-        if retcode != 0:
-            raise RuntimeError("Error while running BBTools stats.sh!")
-        print("Done running BBTools stats.sh")
-        return {
-            "stats_tsv": stats_output,
-            "stats_file": stats_stdout
-        }
-
-    def _run_bbmap(self, corrected_reads_file, contigs_file):
-        """
-        corrected_reads_file = original fastq file corrected by BFC
-        contigs_file = assembled contigs from SPAdes
-        """
-        bbmap_output_dir = os.path.join(self.output_dir, "readMappingPairs")
-        mkdir(bbmap_output_dir)
-
-        sam_output = os.path.join(bbmap_output_dir, "pairedMapped.sam.gz")
-        coverage_stats_output = os.path.join(bbmap_output_dir, "covstats.txt")
-        bbmap_stats_output = os.path.join(bbmap_output_dir, "bbmap_stats.txt")
-        bbmap_cmd = [
-            BBMAP,
-            "-Xmx24g",
-            "nodisk=true",
-            "interleaved=true",
-            "ambiguous=random",
-            "in={}".format(corrected_reads_file),
-            "ref={}".format(contigs_file),
-            "out={}".format(sam_output),
-            "covstats={}".format(coverage_stats_output),
-            "2>",
-            bbmap_stats_output
-        ]
-        print("Running BBMap with command:")
-        print(" ".join(bbmap_cmd))
-        p = subprocess.Popen(bbmap_cmd, cwd=self.scratch_dir, shell=False)
-        retcode = p.wait()
-        if retcode != 0:
-            raise RuntimeError("Error while running BBMap!")
-        print("Done running BBMap")
-        return {
-            "map_file": sam_output,
-            "coverage": coverage_stats_output,
-            "stats": bbmap_stats_output
-        }
-
-    def _format_outputs(self, rqc_output, bfc_output, spades_output_dir, agp_output, stats_output, bbmap_output):
-        """
-        rqc_output = single file, qc / filtered reads
-        bfc_output = single file, gzipped filtered reads
-        spades_output_dir = directory, with (needed files) contigs.fasta, scaffolds.fasta
-        agp_output = dict with keys->files for keys scaffolds, contigs, agp, and legend
-        stats_output = dict with keys->files for stats_tsv, stats_file
-        bbmap_output = dict with objects stats_file, map_file (SAM), and coverage.
-
-        This reformats all of those into a single dict. Might do some other cleanup later.
-        """
-        output_files = {
-            "scaffolds": agp_output["scaffolds"],
-            "contigs": agp_output["contigs"],
-            "mapping": bbmap_output["map_file"],
-            "bbmap_coverage": bbmap_output["coverage"],
-            "bbmap_stats": bbmap_output["stats"],
-            "assembly_stats": stats_output["stats_file"],
-            "assembly_tsv": stats_output["stats_tsv"],
-            "rqcfilter_log": rqc_output["run_log"],
-        }
-        spades_log = os.path.join(spades_output_dir, "spades.log")
-        if os.path.exists(spades_log):
-            output_files["spades_log"] = spades_log
-        spades_warnings = os.path.join(spades_output_dir, "warnings.log")
-        if os.path.exists(spades_warnings):
-            output_files["spades_warnings"] = spades_warnings
-        spades_params = os.path.join(spades_output_dir, "params.txt")
-        if os.path.exists(spades_params):
-            output_files["spades_params"] = spades_params
-        return output_files
 
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
         """
