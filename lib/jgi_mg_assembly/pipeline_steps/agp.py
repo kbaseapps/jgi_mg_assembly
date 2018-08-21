@@ -6,8 +6,7 @@ from jgi_mg_assembly.utils.util import mkdir
 AGP_FILE_TOOL = "/kb/module/bbmap/fungalrelease.sh"
 class AgpRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(AgpRunner, self).__init__("createAGPFile", AGP_FILE_TOOL, scratch_dir, False)
-        self.output_dir = output_dir
+        super(AgpRunner, self).__init__("createAGPFile", "BBTools", AGP_FILE_TOOL, scratch_dir, output_dir, False)
 
     def run(self, spades_scaffolds):
         """
@@ -55,5 +54,7 @@ class AgpRunner(Step):
             "scaffolds_file": out_scaffolds,
             "contigs_file": out_contigs,
             "agp_file": out_agp,
-            "legend_file": out_legend
+            "legend_file": out_legend,
+            "command": command,
+            "version_string": self.version_string()
         }

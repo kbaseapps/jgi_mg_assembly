@@ -6,8 +6,7 @@ PIGZ = "pigz"
 
 class SeqtkRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(SeqtkRunner, self).__init__("SeqTK", SEQTK, scratch_dir, True)
-        self.output_dir = output_dir
+        super(SeqtkRunner, self).__init__("SeqTK", "SeqTK", SEQTK, scratch_dir, output_dir, True)
 
     def run(self, corrected_reads):
         zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")

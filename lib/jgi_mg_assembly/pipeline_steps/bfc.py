@@ -5,8 +5,7 @@ import os
 BFC = "/kb/module/bin/bfc"
 class BFCRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(BFCRunner, self).__init__("BFC", BFC, scratch_dir, True)
-        self.output_dir = output_dir
+        super(BFCRunner, self).__init__("BFC", "BFC", BFC, scratch_dir, output_dir, True)
 
     def run(self, filtered_reads_file, debug=False):
         """

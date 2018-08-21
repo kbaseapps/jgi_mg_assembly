@@ -1,19 +1,26 @@
 from __future__ import print_function
 import subprocess
+from ConfigParser import ConfigParser
 
 
 class Step(object):
-    def __init__(self, name, base_command, scratch_dir, shell_cmd):
+    def __init__(self, name, version_name, base_command, scratch_dir, output_dir, shell_cmd):
         """
         base_command: the string for which command to run from the command line.
         name: the name of the command for showing the user.
         scratch_dir: the working directory to use.
+        output_dir: the output directory for this pipeline run.
         shell_cmd: True if this is a shell command, False otherwise. I.e., if subprocess.Popen needs shell access
         """
         self.base_command = base_command
         self.step_name = name
         self.shell_cmd = shell_cmd
         self.scratch_dir = scratch_dir
+        self.output_dir = output_dir
+        config = ConfigParser()
+        config.read("/kb/module/pipeline.cfg")
+        self.version = config.get("versions", version_name)
+        self.version_name = version_name
 
     def run(self, *params):
         """
@@ -43,3 +50,6 @@ class Step(object):
         else:
             print("========================================\nPipeline step {} returned a nonzero error code!\nCommand: {}\nExit code: {}\n\n".format(self.step_name, ' '.join(command), exit_code))
         return (exit_code, ' '.join(command))
+
+    def version_string(self):
+        return "{} v{}".format(self.version_name, self.version)

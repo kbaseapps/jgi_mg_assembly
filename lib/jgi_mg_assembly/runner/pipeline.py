@@ -5,7 +5,7 @@ from BBTools.BBToolsClient import BBTools
 from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
-from jgi_mg_assembly.pipeline_steps.readlength import readlength
+from jgi_mg_assembly.pipeline_steps.readlength import ReadLengthRunner
 from jgi_mg_assembly.pipeline_steps.rqcfilter import RQCFilterRunner
 from jgi_mg_assembly.pipeline_steps.bfc import BFCRunner
 from jgi_mg_assembly.pipeline_steps.seqtk import SeqtkRunner
@@ -96,18 +96,17 @@ class Pipeline(object):
         10. BBMap.
         11. Return structure with resulting files and objects.
         """
+        readlength = ReadLengthRunner(self.scratch_dir, self.output_dir)
         # get reads info on the base input.
-        reads_info_initial = readlength(files,
-                                        os.path.join(self.output_dir, "pre_filter_readlen.txt"))
+        reads_info_initial = readlength.run(files, "pre_filter_readlen.txt")
 
         # run RQCFilter
         # keys: output_directory, filtered_fastq_file, run_log
-        rqcfilter = RQCFilterRunner(self.callback_url, self.scratch_dir, options)
+        rqcfilter = RQCFilterRunner(self.callback_url, self.scratch_dir, self.output_dir, options)
         rqc_output = rqcfilter.run(files)
 
         # get info on the filtered reads
-        reads_info_filtered = readlength(rqc_output["filtered_fastq_file"],
-                                         os.path.join(self.output_dir, "filtered_readlen.txt"))
+        reads_info_filtered = readlength.run(rqc_output["filtered_fastq_file"], "filtered_readlen.txt")
 
         # run BFC on the filtered reads
         # keys: corrected_reads, command
@@ -120,8 +119,7 @@ class Pipeline(object):
         seqtk_output = seqtk.run(bfc_output["corrected_reads"])
 
         # get info on the filtered/corrected reads
-        reads_info_corrected = readlength(seqtk_output["cleaned_reads"],
-                                          os.path.join(self.output_dir, "corrected_readlen.txt"))
+        reads_info_corrected = readlength.run(seqtk_output["cleaned_reads"], "corrected_readlen.txt")
 
         # assemble the filtered/corrected reads with spades
         # keys:

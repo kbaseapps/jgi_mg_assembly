@@ -14,8 +14,7 @@ SPADES = "/opt/SPAdes-3.12.0-Linux/bin/spades.py"
 
 class SpadesRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(SpadesRunner, self).__init__('SPAdes', SPADES, scratch_dir, False)
-        self.output_dir = output_dir
+        super(SpadesRunner, self).__init__("SPAdes", "SPAdes", SPADES, scratch_dir, output_dir, False)
 
     def run(self, input_file, reads_info, options):
         """

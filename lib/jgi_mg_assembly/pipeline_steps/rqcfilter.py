@@ -3,9 +3,9 @@ from DataFileUtil.DataFileUtilClient import DataFileUtil
 from jgi_mg_assembly.utils.util import mkdir
 import os
 from time import time
+from step import Step
 
-
-class RQCFilterRunner(object):
+class RQCFilterRunner(Step):
     """
     Acts as a runner for RQCFilter.
     This has two functions.
@@ -20,14 +20,14 @@ class RQCFilterRunner(object):
               the rest of the pipeline doesn't fork.
     """
 
-    def __init__(self, callback_url, scratch_dir, options):
+    def __init__(self, callback_url, scratch_dir, output_dir, options):
+        super(RQCFilterRunner, self).__init__("RQCFilter", "BBTools", None, scratch_dir, output_dir, False)
         self.callback_url = callback_url
-        self.scratch_dir = scratch_dir
         self.skip = options.get("skip_rqcfilter")
         self.debug = options.get("debug")
 
     def get_command(self):
-        return "rqcfilter.sh "
+        return "rqcfilter2.sh "
 
     def run(self, reads_file):
         """

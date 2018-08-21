@@ -6,8 +6,7 @@ BBMAP = "/kb/module/bbmap/bbmap.sh"
 
 class BBMapRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(BBMapRunner, self).__init__("BBMap", BBMAP, scratch_dir, False)
-        self.output_dir = output_dir
+        super(BBMapRunner, self).__init__("BBMap", "BBTools", BBMAP, scratch_dir, output_dir, False)
 
     def run(self, reads_file, contigs_file):
         """
@@ -40,5 +39,5 @@ class BBMapRunner(Step):
         return {
             "map_file": sam_output,
             "coverage_file": coverage_stats_output,
-            "stats_file": bbmap_stats_output
+            "stats_file": bbmap_stats_output,
         }

@@ -7,8 +7,7 @@ BBTOOLS_STATS = "/kb/module/bbmap/stats.sh"
 
 class StatsRunner(Step):
     def __init__(self, scratch_dir, output_dir):
-        super(StatsRunner, self).__init__("BBTools stats", BBTOOLS_STATS, scratch_dir, False)
-        self.output_dir = output_dir
+        super(StatsRunner, self).__init__("BBTools stats", "BBTools", BBTOOLS_STATS, scratch_dir, output_dir, False)
 
     def run(self, scaffold_file):
         stats_output_dir = os.path.join(self.output_dir, "assembly_stats")
