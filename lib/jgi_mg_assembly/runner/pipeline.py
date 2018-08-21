@@ -159,6 +159,7 @@ class Pipeline(object):
             },
             "rqcfilter": rqc_output,
             "bfc": bfc_output,
+            "seqtk": seqtk_output
             "spades": spades_output,
             "agp": agp_output,
             "stats": stats_output,
@@ -169,15 +170,19 @@ class Pipeline(object):
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
         """
         Uploads the new Assembly object to the user's workspace.
-        pipeline_result - dict, needs to see
-        * contigs - the generated contigs file at the end of the pipeline run.
+        pipeline_result - dict, needs to see following keys:
+        pipeline_result["spades"]["contigs_file"] - the generated contigs file at the end of the pipeline run.
+        (later, 8/20/2018):
+         - pipeline_result["rqcfilter"]["filtered_fastq_file"]
+         - pipeline_result["bfc"]["corrected_reads"]
+         - pipeline_result["seqtk"]["cleaned_reads"]
         workspace_name - the name of the workspace to upload to
         assembly_name - the name of the new assembly object.
 
         returns a dict with key "assembly_upa" - the created UPA for the Assembly object.
         """
         uploaded_upa = self.file_util.upload_assembly(
-            pipeline_result["contigs"], workspace_name, assembly_name
+            pipeline_result["spades"]["contigs_file"], workspace_name, assembly_name
         )
         return {
             "assembly_upa": uploaded_upa
@@ -211,15 +216,16 @@ class Pipeline(object):
         })
 
         stats_files = {
-            "bbmap_stats": pipeline_output["bbmap_stats"],
-            "covstats": pipeline_output["bbmap_coverage"],
-            "assembly_stats": pipeline_output["assembly_stats"],
-            "assembly_tsv": pipeline_output["assembly_tsv"],
-            "rqcfilter_log": pipeline_output["rqcfilter_log"]
+            "bbmap_stats": pipeline_output["bbmap"]["stats_file"],
+            "covstats": pipeline_output["bbmap"]["coverage_file"],
+            "assembly_stats": pipeline_output["stats"]["stats_txt"],
+            "assembly_tsv": pipeline_output["stats"]["stats_tsv"],
+            "rqcfilter_log": pipeline_output["rqcfilter"]["run_log"],
+            "spades_log": pipeline_output["spades"]["run_log"],
+            "spades_params": pipeline_output["spades"]["params_log"]
         }
-        for f in ["spades_log", "spades_warnings", "spades_params"]:
-            if f in pipeline_output:
-                stats_files[f] = pipeline_output[f]
+        if pipeline_output["spades"].get("warnings_log"):
+            stats_files["spades_warnings"] = pipeline_output["spades"]["warnings_log"]
         for f in ["pre_filter", "filtered", "corrected"]:
             if f in pipeline_output["reads_info"]:
                 stats_files[f + "_reads"] = pipeline_output["reads_info"][f]["output_file"]
