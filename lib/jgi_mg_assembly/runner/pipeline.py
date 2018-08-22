@@ -149,11 +149,9 @@ class Pipeline(object):
         bbmap_output = bbmap_runner.run(rqc_output["filtered_fastq_file"], spades_output["contigs_file"])
 
         return_dict = {
-            "reads_info": {
-                "pre_filter": reads_info_initial,
-                "filtered": reads_info_filtered,
-                "corrected": reads_info_corrected
-            },
+            "reads_info_prefiltered": reads_info_initial,
+            "reads_info_filtered": reads_info_filtered,
+            "reads_info_corrected": reads_info_corrected,
             "rqcfilter": rqc_output,
             "bfc": bfc_output,
             "seqtk": seqtk_output,
@@ -190,15 +188,17 @@ class Pipeline(object):
         Builds and uploads a report. This contains both an HTML report for display as well
         as a list of report files with various outputs from the pipeline.
 
-        pipeline_output - dict, expects the following keys:
-        * bbmap_stats - the bbmap stats file
-        * bbmap_coverage - the covstats.txt file
-        * assembly_stats - the AGP assembly stats file
-        * assembly_tsv - the AGP assembly stats tsv file (different contents)
-        * rqcfilter_log - the output log from rqcfilter
-        * reads_info - a dictionary containing info about the reads at each step (initial, filtered, and corrected)
-        *   - should have keys: pre_filter, filtered, corrected,
-        *   - contents are the results of readlength() for each case
+        pipeline_output - dict, expects the following keys, from each of the different steps
+        * reads_info_prefiltered
+        * reads_info_filtered
+        * reads_info_corrected
+        * rqcfilter
+        * bfc
+        * seqtk
+        * spades
+        * agp
+        * stats
+        * bbmap
 
         output_objects - dict, expects to see
         * assembly_upa - the UPA for the new assembly object

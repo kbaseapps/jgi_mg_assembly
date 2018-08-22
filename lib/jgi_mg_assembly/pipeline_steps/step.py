@@ -52,4 +52,4 @@ class Step(object):
         return (exit_code, ' '.join(command))
 
     def version_string(self):
-        return "{} v{}".format(self.version_name, self.version)
+        return "{} {}".format(self.version_name, self.version)

@@ -7,6 +7,8 @@ import shutil
 import zipfile
 import subprocess
 import re
+import json
+from pprint import pprint
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from KBaseReport.KBaseReportClient import KBaseReport
 from .util import mkdir
@@ -24,23 +26,21 @@ class ReportUtil(object):
         report object that can tbe downloaded by the user. Expects to see (at a minimum)
         the following structure for the pipeline_output. ? = optional file
 
-        "reads_info": {
-            "pre_filter": {
-                "output_file": file,
-                "command": string,
-                "version_string": string,
-                "count": int,
-                bases": int,
-                "max": int,
-                "min": int,
-                "avg": float,
-                "median": int,
-                "mode": int,
-                "std_dev": float,
-            },
-            "filtered": as above,
-            "corrected": one more time
+        "reads_info_prefiltered": {
+            "output_file": file,
+            "command": string,
+            "version_string": string,
+            "count": int,
+            bases": int,
+            "max": int,
+            "min": int,
+            "avg": float,
+            "median": int,
+            "mode": int,
+            "std_dev": float,
         },
+        "reads_info_filtered": as above,
+        "reads_info_corrected": one more time,
         "rqcfilter": {
             "output_directory": file path,
             "filtered_fastq_file": file,
@@ -100,106 +100,91 @@ class ReportUtil(object):
         """
         # We're gonna assume that all files exist. The only ones that are maybes are from spades.
         assert pipeline_output, "Pipeline output not found!"
-        assert pipeline_output.get("reads_info"), "The reads info is required as part of the pipeline output!"
         assert workspace_name, "A workspace name is required!"
 
-        required_counts = ["pre_filter", "filtered", "corrected"]
+        required_counts = ["reads_info_prefiltered", "reads_info_filtered", "reads_info_corrected"]
         for req in required_counts:
-            if req not in pipeline_output["reads_info"]:
-                raise ValueError("Required reads info '{}' is not present!".format(req))
+            assert req in pipeline_output, "Required reads info '{}' is not present!".format(req)
         if not saved_objects:
             saved_objects = list()
 
+        # Make the html report
         html_report_dir = os.path.join(self.output_dir, "report")
         mkdir(html_report_dir)
+        html_file_name = os.path.join(html_report_dir, "index.html")
+        self._write_html_file(html_file_name, pipeline_output)
 
-        result_file = os.path.join(html_report_dir, 'assembly_report.zip')
+        # Write the command info file
+        pipeline_info_file = os.path.join(html_report_dir, "pipeline_info.json")
+        self._write_pipeline_info_file(pipeline_output, pipeline_info_file)
+
+        result_file = os.path.join(self.output_dir, "assembly_report.zip")
+        report_files = {
+            "reads_info_prefiltered": ["output_file"],
+            "reads_info_filtered": ["output_file"],
+            "reads_info_corrected": ["output_file"],
+            "rqcfilter": ["run_log"],
+            "spades": ["run_log", "params_log", "warnings_log"],
+            "stats": ["stats_tsv", "stats_txt", "stats_err"],
+            "bbmap": ["coverage_file", "stats_file"]
+        }
         with zipfile.ZipFile(result_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as report_zip:
-            for file_name in stats_files.values():
-                zipped_file_name = os.path.basename(file_name)
-                report_zip.write(file_name, zipped_file_name)
-                shutil.copy(file_name, os.path.join(html_report_dir, zipped_file_name))
+            # add reads info report
+            for step, file_list in report_files.iteritems():
+                for f in file_list:
+                    if f in pipeline_output[step] and os.path.exists(pipeline_output[step][f]):
+                        zip_path = os.path.join(step, os.path.basename(pipeline_output[step][f]))
+                        report_zip.write(pipeline_output[step][f], zip_path)
+            report_zip.write(pipeline_info_file, "pipeline_info.json")
+            report_zip.write(html_file_name, "report.html")
+
         file_links = [{
             'path': result_file,
             'name': os.path.basename(result_file),
             'label': 'assembly_report',
             'description': 'JGI Metagenome Assembly Report'
         }]
-
-        html_file_name = os.path.join(html_report_dir, "index.html")
-        self._write_html_file(html_file_name, stats_files, reads_info)
         return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
 
-    # def make_report(self, stats_files, reads_info, workspace_name, saved_objects):
-        # if not stats_files or not isinstance(stats_files, dict):
-        #     raise ValueError("A dictionary of stats_files is required")
+    def _write_pipeline_info_file(self, pipeline_output, info_file):
+        pipeline_steps = []
+        for step in ["reads_info_prefiltered", "rqcfilter", "reads_info_filtered", "bfc", "seqtk", "reads_info_corrected", "spades", "agp", "stats", "bbmap"]:
+            pipeline_steps.append({
+                "step": step,
+                "command": pipeline_output[step]["command"],
+                "version": pipeline_output[step]["version_string"]
+            })
+        with open(info_file, "w") as f:
+            f.write(json.dumps(pipeline_steps, indent=4))
 
-        # # Check that required files are present.
-        # required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv", "rqcfilter_log"]
-        # for req in required_files:
-        #     if req not in stats_files:
-        #         raise ValueError("Required stats file '{}' is not present!".format(req))
-
-        # # Check that all files actually exist.
-        # for key in stats_files:
-        #     if not os.path.exists(stats_files[key]):
-        #         raise ValueError("Stats file '{}' with path '{}' doesn't appear to exist!".format(key, stats_files[key]))
-
-        # Check that the reads infos are present and real, and that their files exist.
-        # if not reads_info or not isinstance(reads_info, dict):
-        #     raise ValueError("A dictionary of reads_info is required")
-        # required_counts = ["pre_filter", "filtered", "corrected"]
-        # for req in required_counts:
-        #     if req not in reads_info:
-        #         raise ValueError("Required reads info '{}' is not present!".format(req))
-        # if not workspace_name:
-        #     raise ValueError("A workspace name is required")
-        # # if not saved_objects:
-        # #     saved_objects = list()
-
-
-        # result_file = os.path.join(html_report_dir, 'assembly_report.zip')
-        # with zipfile.ZipFile(result_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as report_zip:
-        #     for file_name in stats_files.values():
-        #         zipped_file_name = os.path.basename(file_name)
-        #         report_zip.write(file_name, zipped_file_name)
-        #         shutil.copy(file_name, os.path.join(html_report_dir, zipped_file_name))
-        # file_links = [{
-        #     'path': result_file,
-        #     'name': os.path.basename(result_file),
-        #     'label': 'assembly_report',
-        #     'description': 'JGI Metagenome Assembly Report'
-        # }]
-
-        # html_file_name = os.path.join(html_report_dir, "index.html")
-        # self._write_html_file(html_file_name, stats_files, reads_info)
-        # return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
-
-    def _write_html_file(self, html_file_name, stats_files, reads_info):
+    def _write_html_file(self, html_file_name, pipeline_output):
         """
         Assembles and writes out an HTML report file, following the idoms developed by JGI.
         Right now, this just cobbles together text into a single <pre> formatted HTML file.
         """
         header = "Assembly using the JGI metagenome assembly pipeline, interpreted by KBase\n\n"
 
-        filter_percent = self._percent_reads(reads_info["filtered"]["count"], reads_info["pre_filter"]["count"])
-        corrected_percent = self._percent_reads(reads_info["corrected"]["count"],
-                                                reads_info["pre_filter"]["count"])
+        filter_percent = self._percent_reads(pipeline_output["reads_info_filtered"]["count"], pipeline_output["reads_info_prefiltered"]["count"])
+        corrected_percent = self._percent_reads(pipeline_output["reads_info_corrected"]["count"],
+                                                pipeline_output["reads_info_prefiltered"]["count"])
         read_processing = (
             "Read Pre-processing\n"
             "The number of raw input reads is: {}\n"
             "The number of reads remaining after quality filter: {} ({}% of raw)\n"
             "The final number of reads remaining "
             "after read correction: {} ({}% of raw)\n\n"
-        ).format(reads_info["pre_filter"]["count"], reads_info["filtered"]["count"], filter_percent,
-                 reads_info["corrected"]["count"], corrected_percent)
+        ).format(pipeline_output["reads_info_prefiltered"]["count"],
+                 pipeline_output["reads_info_filtered"]["count"],
+                 filter_percent,
+                 pipeline_output["reads_info_corrected"]["count"],
+                 corrected_percent)
 
-        with open(stats_files["assembly_stats"]) as stats:
+        with open(pipeline_output["stats"]["stats_txt"], "r") as stats:
             assembly_stats_file = "".join(stats.readlines())
         assembly_stats = "Assembly stats:\n{}".format(assembly_stats_file)
 
-        counts = self._calc_alignment_counts(stats_files)
-        m50, m90 = self._calc_m50_m90(stats_files, counts["input_reads"])
+        counts = self._calc_alignment_counts(pipeline_output["bbmap"]["stats_file"])
+        m50, m90 = self._calc_m50_m90(pipeline_output["bbmap"]["coverage_file"], counts["input_reads"])
         alignment_stats = "Alignment of reads to final assembly:\n"
         if "error" in counts:
             alignment_stats = alignment_stats + "An error occurred! Unable to calculate alignment stats: {}".format(counts["error"])
@@ -262,17 +247,22 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
             return 0  # special case here - if y = 0, and x > 0, something's funky. ignore.
         return int(float(x) / float(y) * 100)
 
-    def _calc_alignment_counts(self, stats_files):
+    def _calc_alignment_counts(self, bbmapfile):
         """
         Adapted from jgi_mga_create_metadata_dot_json.metagenome_alignment_metadata
 
         This calculates the number of reads used as input to the BBMap alignment tool and the
-        number of reads aligned by reading and interpreting the output to stderr from BBMap
-        (captured in stats_files["bbmap_stats"]).
+        number of reads aligned by reading and interpreting the output to stderr from BBMap.
+
+        Returns a dict with the following keys:
+        * error - string, returned if there's an error while reading files.
+        * aligned - number of aligned reads
+        * input_reads - number of input reads sent to BBMap
+        * aligned_percent - percent of reads aligned to the assembly
         """
         # fetch the number of mapped reads
         counts = dict()
-        bbmapfile = stats_files["bbmap_stats"]
+        # bbmapfile = pipeline_output["bbmap"]["stats_file"]
         cmd = "grep \"^mapped:\" " + bbmapfile + r' |  cut -f 3 |  sed "s/\s//g"'
         lines = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.readlines()
         if len(lines) != 2:
@@ -300,7 +290,7 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
         counts["aligned_percent"] = self._percent_reads(counts["aligned"], counts["input_reads"])
         return counts
 
-    def _calc_m50_m90(self, stats_files, input_reads_count):
+    def _calc_m50_m90(self, covstats_file, input_reads_count):
         """
         Calculates the m50 and m90 values from the covstats.txt file generated from BBMap (in
         stats_files["covstats"]). So it needs a file in that format, and doesn't do too much
@@ -309,7 +299,7 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
         m50 = "NA"
         m90 = "NA"
         total = 0
-        with open(stats_files["covstats"], "r") as f:
+        with open(covstats_file, "r") as f:
             for line in f:
                 vals = line.split()
                 if not vals[6].isdigit():
