@@ -29,5 +29,6 @@ class SeqtkRunner(Step):
 
         return {
             "command": command,
-            "cleaned_reads": zipped_output
+            "cleaned_reads": zipped_output,
+            "version_string": self.version_string()
         }

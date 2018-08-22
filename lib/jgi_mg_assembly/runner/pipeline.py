@@ -212,19 +212,21 @@ class Pipeline(object):
             "description": "Assembled with the JGI metagenome pipeline."
         })
 
-        stats_files = {
-            "bbmap_stats": pipeline_output["bbmap"]["stats_file"],
-            "covstats": pipeline_output["bbmap"]["coverage_file"],
-            "assembly_stats": pipeline_output["stats"]["stats_txt"],
-            "assembly_tsv": pipeline_output["stats"]["stats_tsv"],
-            "rqcfilter_log": pipeline_output["rqcfilter"]["run_log"],
-            "spades_log": pipeline_output["spades"]["run_log"],
-            "spades_params": pipeline_output["spades"]["params_log"]
-        }
-        if pipeline_output["spades"].get("warnings_log"):
-            stats_files["spades_warnings"] = pipeline_output["spades"]["warnings_log"]
-        for f in ["pre_filter", "filtered", "corrected"]:
-            if f in pipeline_output["reads_info"]:
-                stats_files[f + "_reads"] = pipeline_output["reads_info"][f]["output_file"]
-        return report_util.make_report(stats_files, pipeline_output["reads_info"],
-                                       workspace_name, stored_objects)
+        return report_util.make_report(pipeline_output, workspace_name, stored_objects)
+
+        # stats_files = {
+        #     "bbmap_stats": pipeline_output["bbmap"]["stats_file"],
+        #     "covstats": pipeline_output["bbmap"]["coverage_file"],
+        #     "assembly_stats": pipeline_output["stats"]["stats_txt"],
+        #     "assembly_tsv": pipeline_output["stats"]["stats_tsv"],
+        #     "rqcfilter_log": pipeline_output["rqcfilter"]["run_log"],
+        #     "spades_log": pipeline_output["spades"]["run_log"],
+        #     "spades_params": pipeline_output["spades"]["params_log"]
+        # }
+        # if pipeline_output["spades"].get("warnings_log"):
+        #     stats_files["spades_warnings"] = pipeline_output["spades"]["warnings_log"]
+        # for f in ["pre_filter", "filtered", "corrected"]:
+        #     if f in pipeline_output["reads_info"]:
+        #         stats_files[f + "_reads"] = pipeline_output["reads_info"][f]["output_file"]
+        # return report_util.make_report(stats_files, pipeline_output["reads_info"],
+        #                                workspace_name, stored_objects)

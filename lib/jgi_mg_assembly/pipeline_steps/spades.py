@@ -61,6 +61,7 @@ class SpadesRunner(Step):
 
         return_dict = {
             "command": command,
+            "version_string": self.version_string(),
             "output_dir": spades_output_dir,
             "run_log": os.path.join(spades_output_dir, "spades.log"),
             "params_log": os.path.join(spades_output_dir, "params.txt")

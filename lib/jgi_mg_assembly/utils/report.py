@@ -9,7 +9,7 @@ import subprocess
 import re
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from KBaseReport.KBaseReportClient import KBaseReport
-from util import mkdir
+from .util import mkdir
 
 
 class ReportUtil(object):
@@ -17,29 +17,79 @@ class ReportUtil(object):
         self.callback_url = callback_url
         self.output_dir = output_dir
 
-    def make_report(self, stats_files, reads_info, workspace_name, saved_objects):
+    def make_report(self, pipeline_output, workspace_name, saved_objects):
         """
-        From the various stats files, this produces an HTML report containing most of the
-        information. It also assembles those various stats files into a report object.
-        stats_files is expected to be a dict with the following keys:
-        * bbmap_stats - the generated stats from BBMap, that's usually sent to stderr
-        * covstats - the coverage stats from BBMap
-        * assembly_stats - stats from the assembly (made with BBTools stats.sh)
-        * assembly_tsv - a TSV version of most of those stats (with some funky headers)
-        * rqcfilter_log - a text file with the run log from RQCFilter
-        * spades_log - the spades.log file, if available (optional)
-        * spades_warning - the warnings.log file from SPAdes, if available(optional)
-        * spades_params - the params.txt file from SPAdes, if available(optional)
+        Uses the pipeline output structure to produce an HTML report containing most of
+        the relevant information. It also assembles many of the various output files into a
+        report object that can tbe downloaded by the user. Expects to see (at a minimum)
+        the following structure for the pipeline_output. ? = optional file
 
-        reads_info is another dict, with reads counted at different points in the pipeline
-        These are all expected to be results of runner.readlength.readlength. So they're all
-        dicts with info about the reads. Only "count" is used here, so that's all that's
-        needed.
-        * pre_filter - info about reads before any filtering, as uploaded by the user
-        * filtered - info about reads after running RQCFilter
-        * corrected - info about reads after running BFC
+        "reads_info": {
+            "pre_filter": {
+                "output_file": file,
+                "command": string,
+                "version_string": string,
+                "count": int,
+                bases": int,
+                "max": int,
+                "min": int,
+                "avg": float,
+                "median": int,
+                "mode": int,
+                "std_dev": float,
+            },
+            "filtered": as above,
+            "corrected": one more time
+        },
+        "rqcfilter": {
+            "output_directory": file path,
+            "filtered_fastq_file": file,
+            "run_log": file
+        },
+        "bfc": {
+            "command": string,
+            "corrected_reads": file
+            "version_string": string
+        },
+        "seqtk": {
+            "command": string,
+            "cleaned_reads": file,
+            "version_string": string
+        },
+        "spades": {
+            "command": string,
+            "version_string": string,
+            "output_dir": file,
+            "run_log": file,
+            "params_log": file,
+            "warnings_log": file?,
+            "contigs_file": file?,
+            "scaffolds_file": file?
+        },
+        "agp": {
+            "scaffolds_file": file,
+            "contigs_file": file,
+            "agp_file": file,
+            "legend_file": file,
+            "command": string,
+            "version_string": string
+        },
+        "stats": {
+            "stats_tsv": file,
+            "stats_txt": file,
+            "stats_err": file,
+            "version_string": string,
+            "command": string
+        },
+        "bbmap": {
+            "map_file": file (bam file),
+            "coverage_file": file,
+            "stats_file": file,
+            "command": string,
+            "version_string": string
+        }
 
-        Expects saved_objects to be in the correct format for KBaseReports. So, a list of dicts:
+        saved_objects should be in the correct format for KBaseReports. So, a list of dicts:
         {
             "ref": upa,
             "description": some string
@@ -48,29 +98,15 @@ class ReportUtil(object):
         After assembling the report, it uses the KBaseReports module to upload, and returns a dict
         with "report_ref" and "report_name" keys.
         """
-        if not stats_files or not isinstance(stats_files, dict):
-            raise ValueError("A dictionary of stats_files is required")
+        # We're gonna assume that all files exist. The only ones that are maybes are from spades.
+        assert pipeline_output, "Pipeline output not found!"
+        assert pipeline_output.get("reads_info"), "The reads info is required as part of the pipeline output!"
+        assert workspace_name, "A workspace name is required!"
 
-        # Check that required files are present.
-        required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv", "rqcfilter_log"]
-        for req in required_files:
-            if req not in stats_files:
-                raise ValueError("Required stats file '{}' is not present!".format(req))
-
-        # Check that all files actually exist.
-        for key in stats_files:
-            if not os.path.exists(stats_files[key]):
-                raise ValueError("Stats file '{}' with path '{}' doesn't appear to exist!".format(key, stats_files[key]))
-
-        # Check that the reads infos are present and real, and that their files exist.
-        if not reads_info or not isinstance(reads_info, dict):
-            raise ValueError("A dictionary of reads_info is required")
         required_counts = ["pre_filter", "filtered", "corrected"]
         for req in required_counts:
-            if req not in reads_info:
+            if req not in pipeline_output["reads_info"]:
                 raise ValueError("Required reads info '{}' is not present!".format(req))
-        if not workspace_name:
-            raise ValueError("A workspace name is required")
         if not saved_objects:
             saved_objects = list()
 
@@ -93,6 +129,51 @@ class ReportUtil(object):
         html_file_name = os.path.join(html_report_dir, "index.html")
         self._write_html_file(html_file_name, stats_files, reads_info)
         return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
+
+    # def make_report(self, stats_files, reads_info, workspace_name, saved_objects):
+        # if not stats_files or not isinstance(stats_files, dict):
+        #     raise ValueError("A dictionary of stats_files is required")
+
+        # # Check that required files are present.
+        # required_files = ["bbmap_stats", "covstats", "assembly_stats", "assembly_tsv", "rqcfilter_log"]
+        # for req in required_files:
+        #     if req not in stats_files:
+        #         raise ValueError("Required stats file '{}' is not present!".format(req))
+
+        # # Check that all files actually exist.
+        # for key in stats_files:
+        #     if not os.path.exists(stats_files[key]):
+        #         raise ValueError("Stats file '{}' with path '{}' doesn't appear to exist!".format(key, stats_files[key]))
+
+        # Check that the reads infos are present and real, and that their files exist.
+        # if not reads_info or not isinstance(reads_info, dict):
+        #     raise ValueError("A dictionary of reads_info is required")
+        # required_counts = ["pre_filter", "filtered", "corrected"]
+        # for req in required_counts:
+        #     if req not in reads_info:
+        #         raise ValueError("Required reads info '{}' is not present!".format(req))
+        # if not workspace_name:
+        #     raise ValueError("A workspace name is required")
+        # # if not saved_objects:
+        # #     saved_objects = list()
+
+
+        # result_file = os.path.join(html_report_dir, 'assembly_report.zip')
+        # with zipfile.ZipFile(result_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as report_zip:
+        #     for file_name in stats_files.values():
+        #         zipped_file_name = os.path.basename(file_name)
+        #         report_zip.write(file_name, zipped_file_name)
+        #         shutil.copy(file_name, os.path.join(html_report_dir, zipped_file_name))
+        # file_links = [{
+        #     'path': result_file,
+        #     'name': os.path.basename(result_file),
+        #     'label': 'assembly_report',
+        #     'description': 'JGI Metagenome Assembly Report'
+        # }]
+
+        # html_file_name = os.path.join(html_report_dir, "index.html")
+        # self._write_html_file(html_file_name, stats_files, reads_info)
+        # return self._upload_report(html_report_dir, file_links, workspace_name, saved_objects)
 
     def _write_html_file(self, html_file_name, stats_files, reads_info):
         """

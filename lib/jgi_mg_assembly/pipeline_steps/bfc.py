@@ -29,5 +29,6 @@ class BFCRunner(Step):
             raise RuntimeError("An error occurred while running BFC!")
         return {
             "command": command,
-            "corrected_reads": bfc_output_file
+            "corrected_reads": bfc_output_file,
+            "version_string": self.version_string()
         }
