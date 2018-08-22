@@ -158,8 +158,6 @@ generated using bbmap (version 37.75) (4) using default parameters exept ambiguo
     This processing pipeline is the KBase App "Run JGI Metagenome Assembly Pipeline",
 version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 2.1.0).
 
-If you have any questions, please contact the JGI project manager.
-
 
   (1) B. Bushnell: BBTools software package, http://bbtools.jgi.doe.gov
   (2) BFC: correcting Illumina sequencing errors. - Bioinformatics. 2015 Sep 1;31(17):2885-7. doi:

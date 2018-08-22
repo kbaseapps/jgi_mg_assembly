@@ -89,7 +89,7 @@ description : |
                 <b>SPAdes</b> This is the tool used to assemble the reads into contigs and scaffolds. SPAdes is designed to assemble shotgun genomic and metagenomic reads, as used in the rest of this pipeline.
             </p>
             <p>
-                <b>Version:</b> 1.12.0
+                <b>Version:</b> 3.12.0
             </p>
             <p>
                 <b>Parameters:</b> --only-assembler -k 33,55,77,99,127 --meta -t 32 -m 2000

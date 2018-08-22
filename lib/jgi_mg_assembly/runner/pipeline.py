@@ -130,7 +130,6 @@ class Pipeline(object):
 
         # map reads to scaffolds with BBMap
         bbmap_output = self._run_bbmap(
-            agp_output["scaffolds"],
             bfc_output["zipped"],
             agp_output["contigs"]
         )
@@ -268,9 +267,8 @@ class Pipeline(object):
             "stats_file": stats_stdout
         }
 
-    def _run_bbmap(self, scaffold_file, corrected_reads_file, contigs_file):
+    def _run_bbmap(self, corrected_reads_file, contigs_file):
         """
-        scaffold_file = FASTA file produced by SPAdes
         corrected_reads_file = original fastq file corrected by BFC
         contigs_file = assembled contigs from SPAdes
         """
