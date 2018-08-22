@@ -98,6 +98,6 @@ class RQCFilterRunner(Step):
             "output_directory": outdir,
             "filtered_fastq_file": not_filtered_reads,
             "run_log": dummy_log,
-            "command": "BBTools.run_RQCFilter_local {}".format(json.dumps(self.get_parameters())),
+            "command": "BBTools.run_RQCFilter_local -- skipped. No command run.",
             "version_string": "KBase BBTools module"
         }
