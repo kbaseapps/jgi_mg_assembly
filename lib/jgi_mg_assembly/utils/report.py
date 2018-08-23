@@ -12,6 +12,7 @@ from pprint import pprint
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from KBaseReport.KBaseReportClient import KBaseReport
 from .util import mkdir
+from .graphics import generate_graphics
 
 
 class ReportUtil(object):
@@ -108,6 +109,8 @@ class ReportUtil(object):
         if not saved_objects:
             saved_objects = list()
 
+        pipeline_output["report_graphics"] = generate_graphics(pipeline_output["bbmap"]["coverage_file"], self.output_dir)
+
         # Make the html report
         html_report_dir = os.path.join(self.output_dir, "report")
         mkdir(html_report_dir)
@@ -126,7 +129,8 @@ class ReportUtil(object):
             "rqcfilter": ["run_log"],
             "spades": ["run_log", "params_log", "warnings_log"],
             "stats": ["stats_tsv", "stats_txt", "stats_err"],
-            "bbmap": ["coverage_file", "stats_file"]
+            "bbmap": ["coverage_file", "stats_file"],
+            "report_graphics": pipeline_output["report_graphics"].keys()
         }
         with zipfile.ZipFile(result_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as report_zip:
             # add reads info report
@@ -310,6 +314,12 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
                 if total / input_reads_count > 0.9 and m90 == "NA":
                     m90 = vals[2]
         return m50, m90
+
+    def _generate_graphics(self, covstats_file, output_dir):
+        """
+        This one's tricky.
+        This calls out to R to generate graphics.
+        """
 
     def _upload_report(self, report_dir, file_links, workspace_name, saved_objects):
         dfu = DataFileUtil(self.callback_url)

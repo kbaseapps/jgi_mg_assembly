@@ -17,7 +17,10 @@ RUN pip install cffi ndg-httpsclient pyopenssl==17.03 cryptography==2.0.3 --upgr
     && pip install coverage \
     && pip install psutil \
     && pip install pyyaml \
-    && pip install yattag
+    && pip install yattag \
+    && pip install numpy \
+    && pip install matplotlib \
+    && pip install pandas
 
 # -----------------------------------------
 
