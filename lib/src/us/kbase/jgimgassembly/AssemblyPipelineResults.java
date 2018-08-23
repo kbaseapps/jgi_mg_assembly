@@ -13,7 +13,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * <p>Original spec-file type: AssemblyPipelineResults</p>
- * 
+ * <pre>
+ * Outputs from the Assembly pipeline.
+ * report_name:
+ *     The name of the generated report object.
+ * report_ref:
+ *     The UPA for the generated report object.
+ * assembly_output:
+ *     The UPA for the newly made assembly object.
+ * cleaned_reads_output (optional):
+ *     The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
+ * alignment_output (optional):
+ *     The UPA for the uploaded alignment object, if requested by the input.
+ * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -21,7 +33,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "report_name",
     "report_ref",
-    "assembly_output"
+    "assembly_output",
+    "cleaned_reads_output",
+    "alignment_output"
 })
 public class AssemblyPipelineResults {
 
@@ -31,6 +45,10 @@ public class AssemblyPipelineResults {
     private String reportRef;
     @JsonProperty("assembly_output")
     private String assemblyOutput;
+    @JsonProperty("cleaned_reads_output")
+    private String cleanedReadsOutput;
+    @JsonProperty("alignment_output")
+    private String alignmentOutput;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("report_name")
@@ -78,6 +96,36 @@ public class AssemblyPipelineResults {
         return this;
     }
 
+    @JsonProperty("cleaned_reads_output")
+    public String getCleanedReadsOutput() {
+        return cleanedReadsOutput;
+    }
+
+    @JsonProperty("cleaned_reads_output")
+    public void setCleanedReadsOutput(String cleanedReadsOutput) {
+        this.cleanedReadsOutput = cleanedReadsOutput;
+    }
+
+    public AssemblyPipelineResults withCleanedReadsOutput(String cleanedReadsOutput) {
+        this.cleanedReadsOutput = cleanedReadsOutput;
+        return this;
+    }
+
+    @JsonProperty("alignment_output")
+    public String getAlignmentOutput() {
+        return alignmentOutput;
+    }
+
+    @JsonProperty("alignment_output")
+    public void setAlignmentOutput(String alignmentOutput) {
+        this.alignmentOutput = alignmentOutput;
+    }
+
+    public AssemblyPipelineResults withAlignmentOutput(String alignmentOutput) {
+        this.alignmentOutput = alignmentOutput;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -90,7 +138,7 @@ public class AssemblyPipelineResults {
 
     @Override
     public String toString() {
-        return ((((((((("AssemblyPipelineResults"+" [reportName=")+ reportName)+", reportRef=")+ reportRef)+", assemblyOutput=")+ assemblyOutput)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("AssemblyPipelineResults"+" [reportName=")+ reportName)+", reportRef=")+ reportRef)+", assemblyOutput=")+ assemblyOutput)+", cleanedReadsOutput=")+ cleanedReadsOutput)+", alignmentOutput=")+ alignmentOutput)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

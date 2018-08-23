@@ -13,38 +13,64 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * <p>Original spec-file type: AssemblyPipelineParams</p>
- * 
+ * <pre>
+ * Inputs for the Assembly pipeline.
+ * reads_upa:
+ *     UPA for the input reads object. This should be a Paired-End Illumina reads file.
+ * workspace_name:
+ *     name of the workspace to upload to at the end.
+ * output_assembly_name:
+ *     name of the output assembly file.
+ * skip_rqcfilter:
+ *     If 1, skip the RQCFilter step of the pipeline. If 0, run it. (default = 0)
+ * cleaned_reads_name (optional):
+ *     If not empty, this will cause the finalized, cleaned/filtered reads to be uploaded as a new
+ *     reads object with this name. This'll be an interleaved paired-end reads object.
+ * alignment_name (optional):
+ *     If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
+ *     filtered, but uncleaned reads to the constructed assembly.
+ * debug (hidden option):
+ *     If 1, run in debug mode. A little more verbose, and trims some parameters from various steps
+ *     so it can run locally(ish). You probably don't want to do this in production, it's meant for
+ *     testing.
+ * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "reads_ref",
+    "reads_upa",
     "workspace_name",
-    "assembly_name"
+    "output_assembly_name",
+    "skip_rqcfilter",
+    "debug"
 })
 public class AssemblyPipelineParams {
 
-    @JsonProperty("reads_ref")
-    private String readsRef;
+    @JsonProperty("reads_upa")
+    private String readsUpa;
     @JsonProperty("workspace_name")
     private String workspaceName;
-    @JsonProperty("assembly_name")
-    private String assemblyName;
+    @JsonProperty("output_assembly_name")
+    private String outputAssemblyName;
+    @JsonProperty("skip_rqcfilter")
+    private Long skipRqcfilter;
+    @JsonProperty("debug")
+    private Long debug;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("reads_ref")
-    public String getReadsRef() {
-        return readsRef;
+    @JsonProperty("reads_upa")
+    public String getReadsUpa() {
+        return readsUpa;
     }
 
-    @JsonProperty("reads_ref")
-    public void setReadsRef(String readsRef) {
-        this.readsRef = readsRef;
+    @JsonProperty("reads_upa")
+    public void setReadsUpa(String readsUpa) {
+        this.readsUpa = readsUpa;
     }
 
-    public AssemblyPipelineParams withReadsRef(String readsRef) {
-        this.readsRef = readsRef;
+    public AssemblyPipelineParams withReadsUpa(String readsUpa) {
+        this.readsUpa = readsUpa;
         return this;
     }
 
@@ -63,18 +89,48 @@ public class AssemblyPipelineParams {
         return this;
     }
 
-    @JsonProperty("assembly_name")
-    public String getAssemblyName() {
-        return assemblyName;
+    @JsonProperty("output_assembly_name")
+    public String getOutputAssemblyName() {
+        return outputAssemblyName;
     }
 
-    @JsonProperty("assembly_name")
-    public void setAssemblyName(String assemblyName) {
-        this.assemblyName = assemblyName;
+    @JsonProperty("output_assembly_name")
+    public void setOutputAssemblyName(String outputAssemblyName) {
+        this.outputAssemblyName = outputAssemblyName;
     }
 
-    public AssemblyPipelineParams withAssemblyName(String assemblyName) {
-        this.assemblyName = assemblyName;
+    public AssemblyPipelineParams withOutputAssemblyName(String outputAssemblyName) {
+        this.outputAssemblyName = outputAssemblyName;
+        return this;
+    }
+
+    @JsonProperty("skip_rqcfilter")
+    public Long getSkipRqcfilter() {
+        return skipRqcfilter;
+    }
+
+    @JsonProperty("skip_rqcfilter")
+    public void setSkipRqcfilter(Long skipRqcfilter) {
+        this.skipRqcfilter = skipRqcfilter;
+    }
+
+    public AssemblyPipelineParams withSkipRqcfilter(Long skipRqcfilter) {
+        this.skipRqcfilter = skipRqcfilter;
+        return this;
+    }
+
+    @JsonProperty("debug")
+    public Long getDebug() {
+        return debug;
+    }
+
+    @JsonProperty("debug")
+    public void setDebug(Long debug) {
+        this.debug = debug;
+    }
+
+    public AssemblyPipelineParams withDebug(Long debug) {
+        this.debug = debug;
         return this;
     }
 
@@ -90,7 +146,7 @@ public class AssemblyPipelineParams {
 
     @Override
     public String toString() {
-        return ((((((((("AssemblyPipelineParams"+" [readsRef=")+ readsRef)+", workspaceName=")+ workspaceName)+", assemblyName=")+ assemblyName)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("AssemblyPipelineParams"+" [readsUpa=")+ readsUpa)+", workspaceName=")+ workspaceName)+", outputAssemblyName=")+ outputAssemblyName)+", skipRqcfilter=")+ skipRqcfilter)+", debug=")+ debug)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
