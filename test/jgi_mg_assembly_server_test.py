@@ -97,16 +97,3 @@ class jgi_mg_assemblyTest(unittest.TestCase):
                 "output_assembly_name": "MyNewAssembly",
                 "workspace_name": None
             })
-
-    # def test_readlength(self):
-    #     # copy small fq file to scratch
-    #     file_path = util.file_to_scratch(os.path.join("data", "small.forward.fq"), overwrite=True)
-    #     reads_info = readlength(file_path, "readlen_out.txt")
-    #     self.assertEqual(reads_info["count"], 1250)
-    #     self.assertEqual(reads_info["bases"], 125000)
-    #     self.assertEqual(reads_info["max"], 100)
-    #     self.assertEqual(reads_info["min"], 100)
-    #     self.assertEqual(reads_info["avg"], 100.0)
-    #     self.assertEqual(reads_info["median"], 100)
-    #     self.assertEqual(reads_info["mode"], 100)
-    #     self.assertEqual(reads_info["std_dev"], 0.0)
