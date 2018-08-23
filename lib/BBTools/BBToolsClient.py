@@ -26,7 +26,7 @@ class BBTools(object):
             trust_all_ssl_certificates=False,
             auth_svc='https://kbase.us/services/authorization/Sessions/Login',
             service_ver='release',
-            async_job_check_time_ms=100, async_job_check_time_scale_percent=150,
+            async_job_check_time_ms=100, async_job_check_time_scale_percent=150, 
             async_job_check_max_time_ms=300000):
         if url is None:
             raise ValueError('A url is required')
@@ -131,7 +131,8 @@ class BBTools(object):
            "khist" of type "boolean" (A boolean - 0 for false, 1 for true.
            @range (0, 1))
         :returns: instance of type "RQCFilterAppOutput" -> structure:
-           parameter "report_name" of String, parameter "report_ref" of String
+           parameter "report_name" of String, parameter "report_ref" of
+           String, parameter "run_command" of String
         """
         job_id = self._run_RQCFilter_app_submit(io_params, run_params, context)
         async_job_check_time = self._client.async_job_check_time
@@ -240,9 +241,11 @@ class BBTools(object):
            the file (in the output directory) containing the filtered FASTQ
            reads. This will likely be compressed, if you need it
            decompressed, you can use DataFileUtil.unpack_file (see that
-           module).) -> structure: parameter "output_directory" of String,
-           parameter "run_log" of String, parameter "filtered_fastq_file" of
-           String
+           module). run_command: the string that's run on the command line
+           with all parameters formatted, etc.) -> structure: parameter
+           "output_directory" of String, parameter "run_log" of String,
+           parameter "filtered_fastq_file" of String, parameter "run_command"
+           of String
         """
         job_id = self._run_RQCFilter_local_submit(io_params, run_params, context)
         async_job_check_time = self._client.async_job_check_time
@@ -256,8 +259,30 @@ class BBTools(object):
             if job_state['finished']:
                 return job_state['result'][0]
 
+    def _bbtools_version_submit(self, context=None):
+        return self._client._submit_job(
+             'BBTools.bbtools_version', [],
+             self._service_ver, context)
+
+    def bbtools_version(self, context=None):
+        """
+        Returns the semantic version of the currently installed BBTools. So something like "38.08"
+        :returns: instance of String
+        """
+        job_id = self._bbtools_version_submit(context)
+        async_job_check_time = self._client.async_job_check_time
+        while True:
+            time.sleep(async_job_check_time)
+            async_job_check_time = (async_job_check_time *
+                self._client.async_job_check_time_scale_percent / 100.0)
+            if async_job_check_time > self._client.async_job_check_max_time:
+                async_job_check_time = self._client.async_job_check_max_time
+            job_state = self._check_job(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+
     def status(self, context=None):
-        job_id = self._client._submit_job('BBTools.status',
+        job_id = self._client._submit_job('BBTools.status', 
             [], self._service_ver, context)
         async_job_check_time = self._client.async_job_check_time
         while True:

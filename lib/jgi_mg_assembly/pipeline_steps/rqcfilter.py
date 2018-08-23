@@ -65,8 +65,8 @@ class RQCFilterRunner(Step):
         result = bbtools.run_RQCFilter_local({ "reads_file": reads_file }, self.get_parameters())
         print("Done running RQCFilter")
         result.update({
-            "command": "BBTools.run_RQCFilter_local {}".format(json.dumps(self.get_parameters())),
-            "version_string": "KBase BBTools module"
+            "command": result.get("run_command", "BBTools.run_RQCFilter_local {}".format(json.dumps(self.get_parameters()))),
+            "version_string": "KBase BBTools module - BBTools version {}".format(bbtools.bbtools_version())
         })
         return result
 
