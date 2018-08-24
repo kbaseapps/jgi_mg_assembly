@@ -41,7 +41,7 @@
         {
             "id": "skip_rqcfilter",
             "optional": false,
-            "advanced": true,
+            "advanced": false,
             "allow_multiple": false,
             "default_values": [0],
             "field_type": "checkbox",
@@ -53,7 +53,7 @@
         {
             "id": "output_alignment_name",
             "optional": true,
-            "advanced": true,
+            "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
             "field_type": "text",
@@ -67,7 +67,7 @@
         {
             "id": "filtered_reads_name",
             "optional": true,
-            "advanced": true,
+            "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
             "field_type": "text",
