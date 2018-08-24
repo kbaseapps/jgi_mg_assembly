@@ -9,6 +9,7 @@ import os
 
 from ReadsUtils.ReadsUtilsClient import ReadsUtils
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 
 
 class FileUtil(object):
@@ -43,7 +44,7 @@ class FileUtil(object):
         if not file_path:
             raise ValueError("file_path must be defined")
         if not os.path.exists(file_path):
-            raise ValueError("The given assembly file '{}' does not exist")
+            raise ValueError("The given assembly file '{}' does not exist".format(file_path))
         if not workspace_name:
             raise ValueError("workspace_name must be defined")
         if not assembly_name:
@@ -58,3 +59,50 @@ class FileUtil(object):
             "assembly_name": assembly_name
         })
         return assembly_upa
+
+    def upload_reads(self, file_path, workspace_name, reads_name, source_reads_upa):
+        """
+        Upload the given contigs file as an interleaved PE reads object.
+        """
+        if not file_path:
+            raise ValueError("file_path must be defined")
+        if not os.path.exists(file_path):
+            raise ValueError("The given reads file '{}' does not exist".format(file_path))
+        if not workspace_name:
+            raise ValueError("workspace_name must be defined")
+        if not reads_name:
+            raise ValueError("reads_name must be defined")
+
+        ru = ReadsUtils(self.callback_url)
+        reads_upa = ru.upload_reads({
+            "wsname": workspace_name,
+            "fwd_file": file_path,
+            "name": reads_name,
+            "source_reads_ref": source_reads_upa
+        })["obj_ref"]
+        return reads_upa
+
+    def upload_alignment(self, file_path, reads_upa, assembly_upa, workspace_name, alignment_name):
+        if not file_path:
+            raise ValueError("file_path must be defined")
+        if not os.path.exists(file_path):
+            raise ValueError("The given alignment file '{}' does not exist".format(file_path))
+        if not reads_upa:
+            raise ValueError("The reads UPA must be defined")
+        if not assembly_upa:
+            raise ValueError("The assembly UPA must be defined")
+        if not workspace_name:
+            raise ValueError("workspace_name must be defined")
+        if not alignment_name:
+            raise ValueError("alignment_name must be defined")
+
+        rau = ReadsAlignmentUtils(self.callback_url)
+        alignment_upa = rau.upload_alignment({
+            "file_path": file_path,
+            "read_library_ref": reads_upa,
+            "assembly_or_genome_ref": assembly_upa,
+            "destination_ref": "{}/{}".format(workspace_name, alignment_name),
+            "aligned_using": "BBMap",
+            "condition": "new_assembly"
+        })["obj_ref"]
+        return alignment_upa

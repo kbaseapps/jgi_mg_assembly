@@ -30,6 +30,10 @@ module jgi_mg_assembly {
     cleaned_reads_name (optional):
         If not empty, this will cause the finalized, cleaned/filtered reads to be uploaded as a new
         reads object with this name. This'll be an interleaved paired-end reads object.
+    filtered_reads_name (optional, unless alignment_name is present):
+        If not empty, this will cause the RQCFiltered reads to be uploaded as a new reads object. These
+        are the reads aligned to the final assembly, so these are needed to associate with the
+        final alignment if that alignment is to be kept.
     alignment_name (optional):
         If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
         filtered, but uncleaned reads to the constructed assembly.
@@ -42,6 +46,9 @@ module jgi_mg_assembly {
         reads_upa reads_upa;
         string workspace_name;
         string output_assembly_name;
+        string cleaned_reads_name;
+        string filtered_reads_name;
+        string alignment_name;
         boolean skip_rqcfilter;
         boolean debug;
     } AssemblyPipelineParams;
@@ -52,19 +59,19 @@ module jgi_mg_assembly {
         The name of the generated report object.
     report_ref:
         The UPA for the generated report object.
-    assembly_output:
+    assembly_upa:
         The UPA for the newly made assembly object.
-    cleaned_reads_output (optional):
+    cleaned_reads_upa (optional):
         The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
-    alignment_output (optional):
+    alignment_upa (optional):
         The UPA for the uploaded alignment object, if requested by the input.
     */
     typedef structure {
         string report_name;
         string report_ref;
-        assembly_upa assembly_output;
-        reads_upa cleaned_reads_output;
-        alignment_upa alignment_output;
+        assembly_upa assembly_upa;
+        reads_upa cleaned_reads_upa;
+        alignment_upa alignment_upa;
     } AssemblyPipelineResults;
 
     funcdef run_mg_assembly_pipeline(AssemblyPipelineParams params)
