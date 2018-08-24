@@ -63,6 +63,8 @@ module jgi_mg_assembly {
         The UPA for the newly made assembly object.
     cleaned_reads_upa (optional):
         The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
+    filtered_reads_upa (optional):
+        The UPA for the RQCFiltered reads, if requested by the input, AND skip_rqcfilter is not true.
     alignment_upa (optional):
         The UPA for the uploaded alignment object, if requested by the input.
     */
@@ -71,6 +73,7 @@ module jgi_mg_assembly {
         string report_ref;
         assembly_upa assembly_upa;
         reads_upa cleaned_reads_upa;
+        reads_upa filtered_reads_upa;
         alignment_upa alignment_upa;
     } AssemblyPipelineResults;
 

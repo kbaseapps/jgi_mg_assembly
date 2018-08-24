@@ -49,6 +49,48 @@
                 "checked_value": 1,
                 "unchecked_value": 0
             }
+        },
+        {
+            "id": "output_alignment_name",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [
+                    "KBaseRNASeq.RNASeqAlignment"
+                ]
+            }
+        },
+        {
+            "id": "filtered_reads_name",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [
+                    "KBaseFile.PairedEndLibrary"
+                ]
+            }
+        },
+        {
+            "id": "cleaned_reads_name",
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "is_output_name": true,
+                "valid_ws_types": [
+                    "KBaseFile.PairedEndLibrary"
+                ]
+            }
         }
     ],
     "behavior": {
@@ -73,12 +115,24 @@
                 {
                     "input_parameter": "skip_rqcfilter",
                     "target_property": "skip_rqcfilter"
+                },
+                {
+                    "input_parameter": "output_alignment_name",
+                    "target_property": "alignment_name"
+                },
+                {
+                    "input_parameter": "filtered_reads_name",
+                    "target_property": "filtered_reads_name"
+                },
+                {
+                    "input_parameter": "cleaned_reads_name",
+                    "target_property": "cleaned_reads_name"
                 }
             ],
             "output_mapping": [
                 {
-                    "service_method_output_path": [0, "assembly_output"],
-                    "target_property": "assembly_output"
+                    "service_method_output_path": [0, "assembly_upa"],
+                    "target_property": "assembly_upa"
                 },
                 {
                     "service_method_output_path": [0, "report_name"],
@@ -91,6 +145,18 @@
                 {
                     "narrative_system_variable": "workspace",
                     "target_property": "workspace_name"
+                },
+                {
+                    "service_method_output_path": [0, "alignment_upa"],
+                    "target_property": "alignment_upa"
+                },
+                {
+                    "service_method_output_path": [0, "cleaned_reads_upa"],
+                    "target_property": "cleaned_reads_upa"
+                },
+                {
+                    "service_method_output_path": [0, "filtered_reads_upa"],
+                    "target_property": "filtered_reads_upa"
                 }
             ]
         }
