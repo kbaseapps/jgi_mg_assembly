@@ -44,6 +44,5 @@ class StatsRunner(Step):
             "stats_txt": stats_stdout,
             "stats_err": stats_stderr,
             "version_string": self.version_string(),
-            "command": command + " && " + command2,
-            "version_string": self.version_string()
+            "command": command + " && " + command2
         }
