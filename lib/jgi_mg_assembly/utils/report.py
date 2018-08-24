@@ -200,7 +200,7 @@ class ReportUtil(object):
                 "contigs of this length or larger) is: {}/{}\n\n"
             ).format(counts["input_reads"], counts["aligned"], counts["aligned_percent"], m50, m90)
 
-        protocol = self._protocol_text()
+        protocol = self._protocol_text(pipeline_output)
 
         html_content = "<html><pre>{}{}{}{}{}</pre></html>".format(
             header,
@@ -213,17 +213,41 @@ class ReportUtil(object):
         with open(html_file_name, "w") as outfile:
             outfile.write(html_content)
 
-    def _protocol_text(self):
+    def _protocol_text(self, pipeline_output):
+        # if rqcfilter is run, its command looks like this:
+        #
+        # and if not, it looks like this:
+        # "BBTools.run_RQCFilter_local -- skipped. No command run."
+        rqcfilter_version = pipeline_output["rqcfilter"]["version_string"]
+        rqcfilter_command = pipeline_output["rqcfilter"]["command"]
+        if "skipped" in rqcfilter_command:
+            rqcfilter_command = None
+            rqcfilter_version = None
+
+        bfc_version = pipeline_output["bfc"]["version_string"]
+        # the full bfc command str looks like this:
+        # /kb/module/bin/bfc -1 -k 21 -t 10 input_file_path > output_file_path
+        # trim down the first token, and the last 3 (infile > outfile)
+        bfc_command = " ".join(pipeline_output["bfc"]["command"].split(" ")[1:-3])
+
+        # for spades, we see the following: want the following cmd string:
+        # /opt/SPAdes-3.12.0-Linux/bin/spades.py --only-assembler -k 33,55,77 --meta -t 32 -m 2000 -o output_directory --12 input_reads_file"
+        # so we want to skip the first, and the last 4
+        spades_command = " ".join(pipeline_output["spades"]["command"].split(" ")[1:-4])
+        spades_version = pipeline_output["spades"]["version_string"]
+
+        bbmap_version = pipeline_output["bbmap"]["version_string"]
+
         text = """Assembly Methods:
     Trimmed, screened, paired-end Illumina reads (see documentation for bbtools(1) filtered reads)
-were read corrected using bfc (version r181) with "-1 -s 10g -k 21 -t 10" (2). Reads with no mate pair
+were read corrected using bfc ({}) with parameters "{}" (2). Reads with no mate pair
 were removed.
 
-    The resulting reads were then assembled using SPAdes assembler (SPAdes version: 3.11.1) (3) using
-a range of Kmers with the following options: "-m 2000 --only-assembler -k 33,55,77,99,127 --meta -t 32"
+    The resulting reads were then assembled using SPAdes assembler ({}) (3) using
+a range of Kmers with the following options: "{}"
 
     The entire filtered read set was mapped to the final assembly and coverage information
-generated using bbmap (version 37.75) (4) using default parameters exept ambiguous=random.
+generated using bbmap ({}) (4) using default parameters exept ambiguous=random.
 
     This processing pipeline is the KBase App "Run JGI Metagenome Assembly Pipeline",
 version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 2.1.0).
@@ -236,7 +260,7 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
 10.1101/gr.213959.116
   (4) bbmap.sh https://bbtools.jgi.doe.gov
   (5) KBase jgi_mg_assembly https://github.com/kbaseapps/jgi_mg_assembly"""
-        return text
+        return text.format(bfc_version, bfc_command, spades_version, spades_command, bbmap_version)
 
     def _percent_reads(self, x, y):
         """
