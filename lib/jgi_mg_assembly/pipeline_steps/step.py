@@ -46,9 +46,9 @@ class Step(object):
         exit_code = p.wait()
 
         if exit_code == 0:
-            print("Successfully ran {}".format(self.step_name))
+            print("Successfully ran {}".format(self.step_name), file=sys.stdout)
         else:
-            print("========================================\nPipeline step {} returned a nonzero error code!\nCommand: {}\nExit code: {}\n\n".format(self.step_name, ' '.join(command), exit_code))
+            print("========================================\nPipeline step {} returned a nonzero error code!\nCommand: {}\nExit code: {}\n\n".format(self.step_name, ' '.join(command), exit_code), file=sys.stderr)
         return (exit_code, ' '.join(command))
 
     def version_string(self):
