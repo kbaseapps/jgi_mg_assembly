@@ -1,7 +1,7 @@
 from __future__ import print_function
 import subprocess
 from ConfigParser import ConfigParser
-
+import sys
 
 class Step(object):
     def __init__(self, name, version_name, base_command, scratch_dir, output_dir, shell_cmd):
