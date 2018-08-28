@@ -8,7 +8,7 @@ class AgpRunner(Step):
     def __init__(self, scratch_dir, output_dir):
         super(AgpRunner, self).__init__("createAGPFile", "BBTools", AGP_FILE_TOOL, scratch_dir, output_dir, False)
 
-    def run(self, spades_scaffolds):
+    def run(self, spades_scaffolds, spades_contigs):
         """
         Runs bbmap/fungalrelease.sh to build AGP files and do some mapping and cleanup.
         Returns a dictionary where values are paths to files and keys are the following:
@@ -18,9 +18,8 @@ class AgpRunner(Step):
         legend - legend for generated scaffolds
         """
         if spades_scaffolds is None or not os.path.exists(spades_scaffolds):
-            has_contigs = os.path.exists(os.path.join(spades_dir, "contigs.fasta"))
             err_str = "SPAdes did not generate a scaffolds file - expected to see {}".format(in_scaffolds)
-            if not has_contigs:
+            if not os.path.exists(spades_contigs):
                 err_str = err_str + "\nSPAdes also did not produce a contigs file. This means that either SPAdes finished incorrectly, or your reads were unable to be assembled. Check the Job Status tab for SPAdes details."
             else:
                 err_str = err_str + "\nThis might mean that your reads were unable to be assembled properly, or were over-filtered. Check the Job Status tab for details. The log segment before running SPAdes should show details about the corrected reads used in assembly."

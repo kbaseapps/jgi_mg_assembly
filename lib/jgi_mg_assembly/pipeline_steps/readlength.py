@@ -8,7 +8,6 @@ and returns the number of reads. If there's any problems, this just raises a Val
 """
 from __future__ import print_function
 import os
-import subprocess
 from step import Step
 from jgi_mg_assembly.utils.util import mkdir
 
@@ -51,6 +50,19 @@ class ReadLengthRunner(Step):
         if not os.path.exists(output_file_path):
             raise RuntimeError("The output file '{}' appears not to have been made!".format(output_file_path))
         ret_value = dict()
+        # This file will have some standard lines, all of which start with a '#'
+        # like this:
+        #    #Reads:	358
+        #    #Bases:	35279
+        #    #Max:	100
+        #    #Min:	89
+        #    #Avg:	98.5
+        #    #Median:	100
+        #    #Mode:	100
+        #    #Std_Dev:	4.9
+        #    #Read Length Histogram: (a table follows that we're not using)
+        # These get parsed based on their name. #Reads is an int, so parse it that way. #Avg is a float, etc.
+        # The parsed numerical values get returned in the output dictionary.
         with open(output_file_path, "r") as read_len_file:
             line_mapping = {
                 "#Reads:": ("count", int),
