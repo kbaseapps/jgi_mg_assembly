@@ -1,7 +1,7 @@
 from __future__ import print_function
 import subprocess
 from ConfigParser import ConfigParser
-
+import sys
 
 class Step(object):
     def __init__(self, name, version_name, base_command, scratch_dir, output_dir, shell_cmd):
@@ -53,9 +53,9 @@ class Step(object):
             print("========================================\nPipeline step {} raised an OSError exception!\nIt's possible that the tool was not found, or should be run in a shell.")
 
         if exit_code == 0:
-            print("Successfully ran {}".format(self.step_name))
+            print("Successfully ran {}".format(self.step_name), file=sys.stdout)
         else:
-            print("========================================\nPipeline step {} returned a nonzero error code!\nCommand: {}\nExit code: {}\n\n".format(self.step_name, ' '.join(command), exit_code))
+            print("========================================\nPipeline step {} returned a nonzero error code!\nCommand: {}\nExit code: {}\n\n".format(self.step_name, ' '.join(command), exit_code), file=sys.stderr)
         return (exit_code, ' '.join(command))
 
     def version_string(self):

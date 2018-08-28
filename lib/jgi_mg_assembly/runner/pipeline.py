@@ -1,8 +1,5 @@
-import subprocess
 import time
 import os
-from BBTools.BBToolsClient import BBTools
-from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
 from jgi_mg_assembly.pipeline_steps.readlength import ReadLengthRunner
@@ -37,8 +34,8 @@ class Pipeline(object):
         """
         self._validate_params(params)
         options = {
-            "skip_rqcfilter": True if params.get("skip_rqcfilter") else False,
-            "debug": True if params.get("debug") else False
+            "skip_rqcfilter": bool(params.get("skip_rqcfilter")),
+            "debug": bool(params.get("debug"))
         }
 
         # Fetch reads files
@@ -151,7 +148,7 @@ class Pipeline(object):
         # Polish the scaffolds and get an agp file (and legend)
         # keys: scaffolds, contigs, agp, legend (all file paths)
         agp = AgpRunner(self.scratch_dir, self.output_dir)
-        agp_output = agp.run(spades_output.get("scaffolds_file"))
+        agp_output = agp.run(spades_output.get("scaffolds_file"), spades_output.get("contigs_file"))
 
         # Use BBMap to build up the assembly stats
         # keys: stats_tsv, stats_txt, stats_err

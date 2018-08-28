@@ -4,7 +4,6 @@ by the JGI Metagenome Assembly Pipeline.
 """
 from step import Step
 import os
-import subprocess
 from jgi_mg_assembly.utils.util import (
     mkdir,
     file_to_log
