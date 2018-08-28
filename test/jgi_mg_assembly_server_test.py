@@ -8,7 +8,7 @@ from pprint import pprint  # noqa: F401
 from jgi_mg_assembly.jgi_mg_assemblyImpl import jgi_mg_assembly
 from jgi_mg_assembly.jgi_mg_assemblyServer import MethodContext
 from jgi_mg_assembly.authclient import KBaseAuth as _KBaseAuth
-from jgi_mg_assembly.pipeline_steps.readlength import readlength
+# from jgi_mg_assembly.pipeline_steps.readlength import readlength
 
 import util
 
@@ -98,15 +98,15 @@ class jgi_mg_assemblyTest(unittest.TestCase):
                 "workspace_name": None
             })
 
-    def test_readlength(self):
-        # copy small fq file to scratch
-        file_path = util.file_to_scratch(os.path.join("data", "small.forward.fq"), overwrite=True)
-        reads_info = readlength(file_path, "readlen_out.txt")
-        self.assertEqual(reads_info["count"], 1250)
-        self.assertEqual(reads_info["bases"], 125000)
-        self.assertEqual(reads_info["max"], 100)
-        self.assertEqual(reads_info["min"], 100)
-        self.assertEqual(reads_info["avg"], 100.0)
-        self.assertEqual(reads_info["median"], 100)
-        self.assertEqual(reads_info["mode"], 100)
-        self.assertEqual(reads_info["std_dev"], 0.0)
+    # def test_readlength(self):
+    #     # copy small fq file to scratch
+    #     file_path = util.file_to_scratch(os.path.join("data", "small.forward.fq"), overwrite=True)
+    #     reads_info = readlength(file_path, "readlen_out.txt")
+    #     self.assertEqual(reads_info["count"], 1250)
+    #     self.assertEqual(reads_info["bases"], 125000)
+    #     self.assertEqual(reads_info["max"], 100)
+    #     self.assertEqual(reads_info["min"], 100)
+    #     self.assertEqual(reads_info["avg"], 100.0)
+    #     self.assertEqual(reads_info["median"], 100)
+    #     self.assertEqual(reads_info["mode"], 100)
+    #     self.assertEqual(reads_info["std_dev"], 0.0)
