@@ -17,7 +17,7 @@ class StepTest(unittest.TestCase):
         with util.captured_stdout() as (out, err):
             params = ["flag1", "flag2"]
             (exit_code, command) = mystep.run(*params)
-        self.assertIn("returned a nonzero error code", out.getvalue())
+        self.assertIn("raised an OSError", out.getvalue())
         self.assertEqual("foo flag1 flag2", command)
         self.assertNotEqual(exit_code, 0)
 

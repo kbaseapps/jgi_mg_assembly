@@ -1,7 +1,9 @@
 import time
 import os
+import subprocess
 from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
+from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.pipeline_steps.readlength import ReadLengthRunner
 from jgi_mg_assembly.pipeline_steps.rqcfilter import RQCFilterRunner
 from jgi_mg_assembly.pipeline_steps.bfc import BFCRunner

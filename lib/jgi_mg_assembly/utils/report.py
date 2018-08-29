@@ -14,7 +14,6 @@ from KBaseReport.KBaseReportClient import KBaseReport
 from .util import mkdir
 from .graphics import generate_graphics
 
-
 class ReportUtil(object):
     def __init__(self, callback_url, output_dir):
         self.callback_url = callback_url
@@ -238,7 +237,14 @@ class ReportUtil(object):
 
         bbmap_version = pipeline_output["bbmap"]["version_string"]
 
-        text = """Assembly Methods:
+        rqcfilter_section = ""
+        if rqcfilter_command is not None:
+            rqcfilter_section = "\n    Reads were filtered using RQCFilter ({}), with the following options: \"{}\"\n\n".format(
+                rqcfilter_version,
+                rqcfilter_command
+            )
+
+        text = """Assembly Methods:{}
     Trimmed, screened, paired-end Illumina reads (see documentation for bbtools(1) filtered reads)
 were read corrected using bfc ({}) with parameters "{}" (2). Reads with no mate pair
 were removed.
@@ -256,11 +262,11 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
   (1) B. Bushnell: BBTools software package, http://bbtools.jgi.doe.gov
   (2) BFC: correcting Illumina sequencing errors. - Bioinformatics. 2015 Sep 1;31(17):2885-7. doi:
 10.1093/bioinformatics/btv290. Epub 2015 May 6.
-  (3) metaSPAdes: a new versatile metagenomic assembler - Genome Res. 2017. 27: 824-834.  doi:
+  (3) metaSPAdes: a new versatile metagenomic assembler - Genome Res. 2017. 27: 824-834. doi:
 10.1101/gr.213959.116
   (4) bbmap.sh https://bbtools.jgi.doe.gov
   (5) KBase jgi_mg_assembly https://github.com/kbaseapps/jgi_mg_assembly"""
-        return text.format(bfc_version, bfc_command, spades_version, spades_command, bbmap_version)
+        return text.format(rqcfilter_section, bfc_version, bfc_command, spades_version, spades_command, bbmap_version)
 
     def _percent_reads(self, x, y):
         """
@@ -338,12 +344,6 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
                 if total / input_reads_count > 0.9 and m90 == "NA":
                     m90 = vals[2]
         return m50, m90
-
-    def _generate_graphics(self, covstats_file, output_dir):
-        """
-        This one's tricky.
-        This calls out to R to generate graphics.
-        """
 
     def _upload_report(self, report_dir, file_links, workspace_name, saved_objects):
         dfu = DataFileUtil(self.callback_url)
