@@ -35,12 +35,14 @@ class StatsRunner(Step):
             "2>>",
             stats_stderr
         ]
-        (exit_code, command) = super(StatsRunner, self).run(*stats_second_params)
+        (exit_code, command2) = super(StatsRunner, self).run(*stats_second_params)
         if exit_code != 0:
             raise RuntimeError("Unable to run second pass at stats to generate standard text files!")
 
         return {
             "stats_tsv": stats_output,
             "stats_txt": stats_stdout,
-            "stats_err": stats_stderr
+            "stats_err": stats_stderr,
+            "version_string": self.version_string(),
+            "command": command + " && " + command2
         }

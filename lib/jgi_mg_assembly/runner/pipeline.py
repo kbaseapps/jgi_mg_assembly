@@ -1,7 +1,9 @@
 import time
 import os
+import subprocess
 from jgi_mg_assembly.utils.report import ReportUtil
 from jgi_mg_assembly.utils.util import mkdir
+from jgi_mg_assembly.utils.file import FileUtil
 from jgi_mg_assembly.pipeline_steps.readlength import ReadLengthRunner
 from jgi_mg_assembly.pipeline_steps.rqcfilter import RQCFilterRunner
 from jgi_mg_assembly.pipeline_steps.bfc import BFCRunner
@@ -12,7 +14,6 @@ from jgi_mg_assembly.pipeline_steps.assemblystats import StatsRunner
 from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 
 PIGZ = "pigz"
-
 
 class Pipeline(object):
     def __init__(self, callback_url, scratch_dir):
@@ -44,19 +45,31 @@ class Pipeline(object):
         reads_files = list(files.values())
         pipeline_output = self._run_assembly_pipeline(reads_files[0], options)
 
+        upload_kwargs = {
+            "cleaned_reads_name": params.get("cleaned_reads_name"),
+            "filtered_reads_name": params.get("filtered_reads_name"),
+            "alignment_name": params.get("alignment_name"),
+            "skip_rqcfilter": params.get("skip_rqcfilter"),
+            "input_reads": params.get("reads_upa")
+        }
+
         stored_objects = self._upload_pipeline_result(
-            pipeline_output, params["workspace_name"], params["output_assembly_name"]
+            pipeline_output,
+            params["workspace_name"],
+            params["output_assembly_name"],
+            **upload_kwargs
         )
         print("upload complete")
         print(stored_objects)
         report_info = self._build_and_upload_report(pipeline_output,
                                                     stored_objects,
                                                     params["workspace_name"])
-        return {
+        return_objects = {
             "report_name": report_info["report_name"],
-            "report_ref": report_info["report_ref"],
-            "assembly_upa": stored_objects["assembly_upa"]
+            "report_ref": report_info["report_ref"]
         }
+        return_objects.update(stored_objects)
+        return return_objects
 
     def _validate_params(self, params):
         """
@@ -72,7 +85,11 @@ class Pipeline(object):
             errors.append("Missing the output assembly name!")
         if params.get("workspace_name") is None:
             errors.append("Missing workspace name for the output data!")
-
+        if params.get("skip_rqcfilter") and params.get("filtered_reads_name"):
+            errors.append("Filtered reads are not created when skipping the RQCFilter step, so do not set filtered_reads_name")
+        if params.get("alignment_name"):
+            if not params.get("skip_rqcfilter") and not params.get("filtered_reads_name"):
+                errors.append("When uploading an alignment, and not skipping the RQCFilter step, the filtered reads must be uploaded as well and require a name.")
         if len(errors):
             for error in errors:
                 print(error)
@@ -146,11 +163,9 @@ class Pipeline(object):
         bbmap_output = bbmap_runner.run(rqc_output["filtered_fastq_file"], spades_output["contigs_file"])
 
         return_dict = {
-            "reads_info": {
-                "pre_filter": reads_info_initial,
-                "filtered": reads_info_filtered,
-                "corrected": reads_info_corrected
-            },
+            "reads_info_prefiltered": reads_info_initial,
+            "reads_info_filtered": reads_info_filtered,
+            "reads_info_corrected": reads_info_corrected,
             "rqcfilter": rqc_output,
             "bfc": bfc_output,
             "seqtk": seqtk_output,
@@ -161,41 +176,99 @@ class Pipeline(object):
         }
         return return_dict
 
-    def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name):
+    def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name,
+                                filtered_reads_name=None,
+                                cleaned_reads_name=None,
+                                alignment_name=None,
+                                skip_rqcfilter=False,
+                                input_reads=None):
         """
-        Uploads the new Assembly object to the user's workspace.
-        pipeline_result - dict, needs to see following keys:
-        pipeline_result["spades"]["contigs_file"] - the generated contigs file at the end of the pipeline run.
-        (later, 8/20/2018):
-         - pipeline_result["rqcfilter"]["filtered_fastq_file"]
-         - pipeline_result["bfc"]["corrected_reads"]
-         - pipeline_result["seqtk"]["cleaned_reads"]
-        workspace_name - the name of the workspace to upload to
-        assembly_name - the name of the new assembly object.
+        This is very tricky and uploads (optionally!) a few things under different cases.
+        1. Uploads assembly
+            - this always happens after a successful run.
+        2. Cleaned reads - passed RQCFilter / BFC / SeqTK
+            - optional, if cleaned_reads_name isn't None
+        3. Filtered reads - passed RQCFilter
+            - optional, if filtered_reads_name isn't None AND skip_rqcfilter is False
+        4. BBMap alignment
+            - optional, if alignment_name isn't None.
+                - case 1: if RQCFilter was skipped, then the original input reads UPA is used in this alignment,
+                          and input_reads is required
+                - case 2: if RQCFilter wasn't skipped, then the filtered reads UPA is used, and must be uploaded,
+                          so filtered_reads_name is required
+        returns a dict of UPAs with the following keys:
+        - assembly_upa - the assembly (always)
+        - filtered_reads_upa - the RQCFiltered reads (optionally)
+        - cleaned_reads_upa - the RQCFiltered -> BFC -> SeqTK cleaned reads (optional)
+        - alignment_upa - the BAM alignment object (optional), if alignment_name AND (filtered_reads_name OR (skip_rqcfilter AND input_reads))
+        """
 
-        returns a dict with key "assembly_upa" - the created UPA for the Assembly object.
-        """
-        uploaded_upa = self.file_util.upload_assembly(
+        # Check params first. Also done above, before everything's run, but this is some trickiness.
+        if alignment_name:
+            if skip_rqcfilter:
+                if not input_reads:
+                    raise ValueError("The original input reads UPA is needed to upload an alignment when the RQCFilter step is skipped!")
+            elif not filtered_reads_name:
+                raise ValueError("The filtered reads must be given a name and uploaded when choosing to save the alignment!")
+
+        # upload the assembly
+        uploaded_assy_upa = self.file_util.upload_assembly(
             pipeline_result["spades"]["contigs_file"], workspace_name, assembly_name
         )
-        return {
-            "assembly_upa": uploaded_upa
+        upload_result = {
+            "assembly_upa": uploaded_assy_upa
         }
+        # upload filtered reads if we didn't skip RQCFilter (otherwise it's just a copy)
+        if filtered_reads_name and not skip_rqcfilter:
+            filtered_reads_upa = self.file_util.upload_reads(
+                pipeline_result["rqcfilter"]["filtered_fastq_file"], workspace_name, filtered_reads_name, input_reads
+            )
+            upload_result["filtered_reads_upa"] = filtered_reads_upa
+        # upload the cleaned reads
+        if cleaned_reads_name:
+            # unzip the cleaned reads because ReadsUtils won't do it for us.
+            decompressed_reads = os.path.join(self.output_dir, "cleaned_reads.fastq")
+            pigz_command = "{} -d -c {} > {}".format(PIGZ, pipeline_result["seqtk"]["cleaned_reads"], decompressed_reads)
+            p = subprocess.Popen(pigz_command, cwd=self.scratch_dir, shell=True)
+            exit_code = p.wait()
+            if exit_code != 0:
+                raise RuntimeError("Unable to decompress cleaned reads for validation! Can't upload them, either!")
+            cleaned_reads_upa = self.file_util.upload_reads(
+                decompressed_reads, workspace_name, cleaned_reads_name, input_reads
+            )
+            upload_result["cleaned_reads_upa"] = cleaned_reads_upa
+        # upload the alignment
+        if alignment_name:
+            if skip_rqcfilter and input_reads:
+                aligned_reads_upa = input_reads
+            else:
+                aligned_reads_upa = filtered_reads_upa
+            alignment_upa = self.file_util.upload_alignment(
+                pipeline_result["bbmap"]["map_file"],
+                aligned_reads_upa,
+                uploaded_assy_upa,
+                workspace_name,
+                alignment_name
+            )
+            upload_result["alignment_upa"] = alignment_upa
+        return upload_result
 
     def _build_and_upload_report(self, pipeline_output, output_objects, workspace_name):
         """
         Builds and uploads a report. This contains both an HTML report for display as well
         as a list of report files with various outputs from the pipeline.
 
-        pipeline_output - dict, expects the following keys:
-        * bbmap_stats - the bbmap stats file
-        * bbmap_coverage - the covstats.txt file
-        * assembly_stats - the AGP assembly stats file
-        * assembly_tsv - the AGP assembly stats tsv file (different contents)
-        * rqcfilter_log - the output log from rqcfilter
-        * reads_info - a dictionary containing info about the reads at each step (initial, filtered, and corrected)
-        *   - should have keys: pre_filter, filtered, corrected,
-        *   - contents are the results of readlength() for each case
+        pipeline_output - dict, expects the following keys, from each of the different steps
+        * reads_info_prefiltered
+        * reads_info_filtered
+        * reads_info_corrected
+        * rqcfilter
+        * bfc
+        * seqtk
+        * spades
+        * agp
+        * stats
+        * bbmap
 
         output_objects - dict, expects to see
         * assembly_upa - the UPA for the new assembly object
@@ -208,20 +281,20 @@ class Pipeline(object):
             "ref": output_objects["assembly_upa"],
             "description": "Assembled with the JGI metagenome pipeline."
         })
+        if "cleaned_reads_upa" in output_objects:
+            stored_objects.append({
+                "ref": output_objects["cleaned_reads_upa"],
+                "description": "Reads processed by the JGI metagenome pipeline before assembly."
+            })
+        if "filtered_reads_upa" in output_objects:
+            stored_objects.append({
+                "ref": output_objects["filtered_reads_upa"],
+                "description": "Reads filtered by RQCFilter, and used to align against the assembled contigs."
+            })
+        if "alignment_upa" in output_objects:
+            stored_objects.append({
+                "ref": output_objects["alignment_upa"],
+                "description": "BBMap alignment made from the filtered reads aligned against the assembled contigs."
+            })
 
-        stats_files = {
-            "bbmap_stats": pipeline_output["bbmap"]["stats_file"],
-            "covstats": pipeline_output["bbmap"]["coverage_file"],
-            "assembly_stats": pipeline_output["stats"]["stats_txt"],
-            "assembly_tsv": pipeline_output["stats"]["stats_tsv"],
-            "rqcfilter_log": pipeline_output["rqcfilter"]["run_log"],
-            "spades_log": pipeline_output["spades"]["run_log"],
-            "spades_params": pipeline_output["spades"]["params_log"]
-        }
-        if pipeline_output["spades"].get("warnings_log"):
-            stats_files["spades_warnings"] = pipeline_output["spades"]["warnings_log"]
-        for f in ["pre_filter", "filtered", "corrected"]:
-            if f in pipeline_output["reads_info"]:
-                stats_files[f + "_reads"] = pipeline_output["reads_info"][f]["output_file"]
-        return report_util.make_report(stats_files, pipeline_output["reads_info"],
-                                       workspace_name, stored_objects)
+        return report_util.make_report(pipeline_output, workspace_name, stored_objects)

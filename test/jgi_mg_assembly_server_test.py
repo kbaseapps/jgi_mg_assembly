@@ -72,10 +72,56 @@ class jgi_mg_assemblyTest(unittest.TestCase):
             "skip_rqcfilter": 1,
             "debug": 1
         })[0]
-
         self.assertIn('report_name', output)
         self.assertIn('report_ref', output)
         self.assertIn('assembly_upa', output)
+        pprint(output)
+
+        # again, but save cleaned reads
+        output = self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+            "reads_upa": self.reads_upa,
+            "output_assembly_name": "MyNewAssembly",
+            "workspace_name": util.get_ws_name(),
+            "skip_rqcfilter": 1,
+            "debug": 1,
+            "cleaned_reads_name": "MyCleanedReads"
+        })[0]
+        self.assertIn("report_name", output)
+        self.assertIn("report_ref", output)
+        self.assertIn("assembly_upa", output)
+        self.assertIn("cleaned_reads_upa", output)
+        pprint(output)
+
+        # again, but save alignment
+        output = self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+            "reads_upa": self.reads_upa,
+            "output_assembly_name": "MyNewAssembly",
+            "workspace_name": util.get_ws_name(),
+            "skip_rqcfilter": 1,
+            "debug": 1,
+            "alignment_name": "MyAlignment"
+        })[0]
+        self.assertIn("report_name", output)
+        self.assertIn("report_ref", output)
+        self.assertIn("assembly_upa", output)
+        self.assertIn("alignment_upa", output)
+        pprint(output)
+        # again, but save alignment AND cleaned reads
+
+        output = self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+            "reads_upa": self.reads_upa,
+            "output_assembly_name": "MyNewAssembly",
+            "workspace_name": util.get_ws_name(),
+            "skip_rqcfilter": 1,
+            "debug": 1,
+            "alignment_name": "MyAlignment",
+            "cleaned_reads_name": "MyCleanedReads"
+        })[0]
+        self.assertIn("report_name", output)
+        self.assertIn("report_ref", output)
+        self.assertIn("assembly_upa", output)
+        self.assertIn("alignment_upa", output)
+        self.assertIn("cleaned_reads_upa", output)
         pprint(output)
 
     def test_run_pipeline_missing_inputs(self):
@@ -98,15 +144,21 @@ class jgi_mg_assemblyTest(unittest.TestCase):
                 "workspace_name": None
             })
 
-    # def test_readlength(self):
-    #     # copy small fq file to scratch
-    #     file_path = util.file_to_scratch(os.path.join("data", "small.forward.fq"), overwrite=True)
-    #     reads_info = readlength(file_path, "readlen_out.txt")
-    #     self.assertEqual(reads_info["count"], 1250)
-    #     self.assertEqual(reads_info["bases"], 125000)
-    #     self.assertEqual(reads_info["max"], 100)
-    #     self.assertEqual(reads_info["min"], 100)
-    #     self.assertEqual(reads_info["avg"], 100.0)
-    #     self.assertEqual(reads_info["median"], 100)
-    #     self.assertEqual(reads_info["mode"], 100)
-    #     self.assertEqual(reads_info["std_dev"], 0.0)
+    def test_run_pipeline_mismatched_inputs(self):
+        with self.assertRaises(ValueError):
+            self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+                "reads_upa": self.reads_upa,
+                "output_assembly_name": "MyNewAssembly",
+                "workspace_name": util.get_ws_name(),
+                "skip_rqcfilter": True,
+                "filtered_reads_name": "MyFilteredReads"
+            })
+        with self.assertRaises(ValueError):
+            self.getImpl().run_mg_assembly_pipeline(self.getContext(), {
+                "reads_upa": self.reads_upa,
+                "output_assembly_name": "MyNewAssembly",
+                "workspace_name": util.get_ws_name(),
+                "alignment_name": "SomeAlignment",
+                "skip_rqcfilter": False
+            })
+

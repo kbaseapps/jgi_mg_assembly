@@ -1,7 +1,7 @@
 import unittest
 import util
 import os
-
+from copy import deepcopy
 from jgi_mg_assembly.utils.report import ReportUtil
 
 
@@ -34,82 +34,125 @@ class report_util_test(unittest.TestCase):
         return ReportUtil(self.callback_url, self.scratch_dir)
 
     def test_make_report_ok(self):
-        # stats_file, coverage_file, workspace_name, saved_objects
-        stats_files = {
-            "bbmap_stats": self.bbmap_stats_file,
-            "covstats": self.cov_stats,
-            "assembly_stats": self.assembly_stats_file,
-            "assembly_tsv": self.assembly_stats_tsv,
-            "rqcfilter_log": self.rqcfilter_log
-        }
-        reads_counts = {
-            "pre_filter": {
-                "count": 10000
+        pipeline_output = {
+            "bbmap": {
+                "stats_file": self.bbmap_stats_file,
+                "coverage_file": self.cov_stats,
+                "command": "bbmap cmd",
+                "version_string": "bbmap version"
             },
-            "filtered": {
-                "count": 8000
+            "stats": {
+                "stats_txt": self.assembly_stats_file,
+                "stats_tsv": self.assembly_stats_tsv,
+                "command": "stats command",
+                "version_string": "stats version"
             },
-            "corrected": {
-                "count": 7000
-            }
+            "rqcfilter": {
+                "run_log": self.rqcfilter_log,
+                "command": "rqcfilter command",
+                "version_string": "rqcfilter version"
+            },
+            "reads_info_prefiltered": {
+                "count": 10000,
+                "command": "reads_info_prefiltered command",
+                "version_string": "reads info version"
+            },
+            "reads_info_filtered": {
+                "count": 8000,
+                "command": "reads_info_filtered command",
+                "version_string": "reads info version"
+            },
+            "reads_info_corrected": {
+                "count": 7000,
+                "command": "reads_info_corrected command",
+                "version_string": "reads info version"
+            },
+            "bfc": {
+                "command": "bfc command",
+                "version_string": "bfc version"
+            },
+            "seqtk": {
+                "command": "seqtk command",
+                "version_string": "seqtk verseion"
+            },
+            "spades": {
+                "command": "spades command",
+                "version_string": "spades version"
+            },
+            "agp": {
+                "command": "agp command",
+                "version_string": "agp version"
+            },
         }
         report_info = self._get_report_util().make_report(
-            stats_files, reads_counts, util.get_ws_name(), []
+            pipeline_output, util.get_ws_name(), []
         )
         self.assertIn('report_ref', report_info)
         self.assertIn('report_name', report_info)
 
     def test_make_report_bad_inputs(self):
-        reads_counts = {
-            "pre_filter": {
-                "count": 10000
+        pipeline_output = {
+            "bbmap": {
+                "stats_file": self.bbmap_stats_file,
+                "coverage_file": self.cov_stats,
+                "command": "bbmap cmd",
+                "version_string": "bbmap version"
             },
-            "filtered": {
-                "count": 8000
+            "stats": {
+                "stats_txt": self.assembly_stats_file,
+                "stats_tsv": self.assembly_stats_tsv,
+                "command": "stats command",
+                "version_string": "stats version"
             },
-            "corrected": {
-                "count": 7000
-            }
+            "rqcfilter": {
+                "run_log": self.rqcfilter_log,
+                "command": "rqcfilter command",
+                "version_string": "rqcfilter version"
+            },
+            "reads_info_prefiltered": {
+                "count": 10000,
+                "command": "reads_info_prefiltered command",
+                "version_string": "reads info version"
+            },
+            "reads_info_filtered": {
+                "count": 8000,
+                "command": "reads_info_filtered command",
+                "version_string": "reads info version"
+            },
+            "reads_info_corrected": {
+                "count": 7000,
+                "command": "reads_info_corrected command",
+                "version_string": "reads info version"
+            },
+            "bfc": {
+                "command": "bfc command",
+                "version_string": "bfc version"
+            },
+            "seqtk": {
+                "command": "seqtk command",
+                "version_string": "seqtk verseion"
+            },
+            "spades": {
+                "command": "spades command",
+                "version_string": "spades version"
+            },
+            "agp": {
+                "command": "agp command",
+                "version_string": "agp version"
+            },
         }
-        stats_files = {
-            "bbmap_stats": self.bbmap_stats_file,
-            "covstats": self.cov_stats,
-            "assembly_stats": self.assembly_stats_file,
-            "assembly_tsv": self.assembly_stats_tsv,
-            "rqcfilter_log": self.rqcfilter_log
-        }
-
         ru = self._get_report_util()
-        with self.assertRaises(ValueError) as cm:
-            ru.make_report(None, reads_counts, util.get_ws_name(), [])
-        self.assertIn("A dictionary of stats_files is required", str(cm.exception))
+        with self.assertRaises(AssertionError) as err:
+            ru.make_report(None, util.get_ws_name(), [])
+        self.assertIn("Pipeline output not found!", str(err.exception))
 
-        with self.assertRaises(ValueError) as cm:
-            ru.make_report("not_a_file", reads_counts, util.get_ws_name(), [])
-        self.assertIn("A dictionary of stats_files is required", str(cm.exception))
+        for key in ["reads_info_prefiltered", "reads_info_filtered", "reads_info_corrected"]:
+            output_copy = deepcopy(pipeline_output)
+            del output_copy[key]
+            with self.assertRaises(AssertionError) as err:
+                ru.make_report(output_copy, util.get_ws_name(), [])
+            self.assertIn("Required reads info '{}' is not present!".format(key), str(err.exception))
 
-        for key in stats_files:
-            stats_copy = stats_files.copy()
-            del stats_copy[key]
-            with self.assertRaises(ValueError) as cm:
-                ru.make_report(stats_copy, reads_counts, util.get_ws_name(), [])
-            self.assertIn("Required stats file '{}' is not present!".format(key), str(cm.exception))
-
-        with self.assertRaises(ValueError) as cm:
-            ru.make_report(stats_files, None, util.get_ws_name(), [])
-        self.assertIn("A dictionary of reads_info is required", str(cm.exception))
-
-        with self.assertRaises(ValueError) as cm:
-            ru.make_report(stats_files, "not a file", util.get_ws_name(), [])
-        self.assertIn("A dictionary of reads_info is required", str(cm.exception))
-
-        for key in reads_counts:
-            reads_copy = reads_counts.copy()
-            del reads_copy[key]
-            with self.assertRaises(ValueError) as cm:
-                ru.make_report(stats_files, reads_copy, util.get_ws_name(), [])
-            self.assertIn("Required reads info '{}' is not present!".format(key), str(cm.exception))
-
-        with self.assertRaises(ValueError) as cm:
-            ru.make_report(stats_files, reads_counts, None, [])
-        self.assertIn("A workspace name is required", str(cm.exception))
+        with self.assertRaises(AssertionError) as err:
+            ru.make_report(pipeline_output, None, [])
+        self.assertIn("A workspace name is required", str(err.exception))

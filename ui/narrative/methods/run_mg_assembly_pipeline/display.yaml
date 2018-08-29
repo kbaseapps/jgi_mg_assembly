@@ -42,11 +42,33 @@ parameters :
             Skip RQCFilter Step
         short-hint: |
             If selected, skips running the RQCFilter step of the pipeline, which filters out adapters, low quality reads, etc. See the catalog page for details.
+    cleaned_reads_name:
+        ui-name: |
+            Cleaned Reads Output (optional)
+        short-hint: |
+            If set, stores the processed reads as a new object. These will have been cleaned by processing with RQCFilter, BFC, and SeqTK.
+    filtered_reads_name :
+        ui-name: |
+            Filtered Reads Output (optional - must be set if not skipping RQCFilter, and saving the alignment)
+        short-hint: |
+            If set, this will save the RQCFiltered reads as a new Reads object. This MUST be set if the final alignment is to be saved and RQCFilter is not skipped.
+    output_alignment_name :
+        ui-name: |
+            Assembly Alignment Name (optional)
+        short-hint: |
+            If set, this will save the BAM alignment between the filtered reads and the final assembly. Note that if not skipping RQCFilter, then the Filtered Reads must be saved as well.
 
 description : |
     <p>
     This is a KBase implementation of the JGI Metagenome Assembly Pipeline. From a set of paired-end reads, it will filter, correct, and assemble them through the steps described below into an Assembly object. This will also generate a report containing several files generated throughout the quality control and assembly process.
     </p>
+    <p>
+    During the process of filtering and cleaning the reads, and mapping the results to the assembly, several optional data objects are made. You can save these by giving them names in their respective fields, described below. If you do not name these objects, they will not be stored.
+    <ul>
+        <li>Cleaned Reads Output - This is the set of paired-end reads that have been filtered with RQCFilter (if that setting is used), and cleaned with BFC and SeqTK.</li>
+        <li>Filtered Reads Output - This is the set of reads that have been filtered with RQCFilter. If the option to skip RQCFilter is selected and a name is given here, an error will happen and your pipeline run will not finish. Also note that if you want to save the final assembly alignment made with BBMap, AND you do not skip the RQCFilter step, this needs to be saved as well.
+        <li>Assembly Alignment Name</li> - This is the BAM alignment between the final assembly and the filtered reads (if filtering is done). Note that saving this also requires saving the filtered reads, if filtering was done.</li>
+    </ul>
     <p>
     <b>Note that this pipeline currently only supports paired-end Illumina reads!</b> If you have other data you would like to use, please <a href="https://kbase.us/contact-us">contact us</a>.
     </p>
@@ -102,7 +124,7 @@ description : |
                 <b>BBTools stats.sh</b> This constructs assembly statistics from the output of SPAdes.
             </p>
             <p>
-                <b>Version:</b> BBTools version 38.19
+                <b>Version:</b> BBTools version 38.22
             </p>
             <p>
                 <b>Parameters:</b> format=6
@@ -113,7 +135,7 @@ description : |
                 <b>BBMap</b> This tool builds a coverage map of reads mapped onto the finalized assembly and generates coverage statistics.
             </p>
             <p>
-                <b>Version:</b> BBTools version 38.19
+                <b>Version:</b> BBTools version 38.22
             </p>
             <p>
                 <b>Parameters:</b> defaults, except for the flag "ambiguous=random"

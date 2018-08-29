@@ -1,8 +1,9 @@
+import os
+import json
+from time import time
 from BBTools.BBToolsClient import BBTools
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from jgi_mg_assembly.utils.util import mkdir
-import os
-from time import time
 from step import Step
 
 class RQCFilterRunner(Step):
@@ -26,27 +27,8 @@ class RQCFilterRunner(Step):
         self.skip = options.get("skip_rqcfilter")
         self.debug = options.get("debug")
 
-    def get_command(self):
-        return "rqcfilter2.sh "
-
-    def run(self, reads_file):
-        """
-        Runs RQCFilter.
-        This just calls out to BBTools.run_RQCFilter_local and returns the result.
-        reads_file: string, the path to the FASTQ file to be filtered.
-        result = dictionary with three keys -
-            output_directory = path to the output directory
-            filtered_fastq_file = as it says, gzipped
-            run_log = path to the stderr log from RQCFilter
-        """
-        if (self.skip):
-            return self.run_skip(reads_file)
-
-        print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
-        bbtools = BBTools(self.callback_url, service_ver='beta')
-        result = bbtools.run_RQCFilter_local({
-            "reads_file": reads_file
-        }, {
+    def get_parameters(self):
+        return {
             "rna": 0,
             "trimfragadapter": 1,
             "qtrim": "r",
@@ -63,8 +45,29 @@ class RQCFilterRunner(Step):
             "khist": 1,
             "removemicrobes": 1,
             "clumpify": 1
-        })
+        }
+
+    def run(self, reads_file):
+        """
+        Runs RQCFilter.
+        This just calls out to BBTools.run_RQCFilter_local and returns the result.
+        reads_file: string, the path to the FASTQ file to be filtered.
+        result = dictionary with three keys -
+            output_directory = path to the output directory
+            filtered_fastq_file = as it says, gzipped
+            run_log = path to the stderr log from RQCFilter
+        """
+        if (self.skip):
+            return self.run_skip(reads_file)
+
+        print("Running RQCFilter remotely using the KBase-wrapped BBTools module...")
+        bbtools = BBTools(self.callback_url, service_ver='beta')
+        result = bbtools.run_RQCFilter_local({ "reads_file": reads_file }, self.get_parameters())
         print("Done running RQCFilter")
+        result.update({
+            "command": result.get("run_command", "BBTools.run_RQCFilter_local {}".format(json.dumps(self.get_parameters()))),
+            "version_string": "KBase BBTools module - BBTools version {}".format(bbtools.bbtools_version())
+        })
         return result
 
     def run_skip(self, reads_file):
@@ -94,5 +97,7 @@ class RQCFilterRunner(Step):
         return {
             "output_directory": outdir,
             "filtered_fastq_file": not_filtered_reads,
-            "run_log": dummy_log
+            "run_log": dummy_log,
+            "command": "BBTools.run_RQCFilter_local -- skipped. No command run.",
+            "version_string": "KBase BBTools module"
         }

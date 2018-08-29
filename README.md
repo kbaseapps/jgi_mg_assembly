@@ -27,12 +27,16 @@ This does the work of assembling the reads. Uses parameters `--only-assembler -k
 uses metaSPAdes with k-mers values of 33, 55, 77, 99, and 127. A caveat here is that if your reads (after filtering and correcting) have an
 average length that's less than any of those k-mer values, that k-mer value won't be used. E.g., if your corrected reads have an average length
 of 100, the k=127 pass will be skipped.
-5. **BBTools stats version 38.19** ([website](https://jgi.doe.gov/data-and-tools/bbtools/))
+5. **BBTools stats version 38.22** ([website](https://jgi.doe.gov/data-and-tools/bbtools/))
 Two more tools are used from BBTools at the end. The first is `stats.sh` to build the assembly statistics. Run with flag `format=6`.
-6. **BBTools bbmap version 38.19**
+6. **BBTools bbmap version 38.22**
 BBMap is finally used at the end to build a coverage map of reads mapped onto the finalized assembly, and generate coverage statistics. Uses default parameters, except for the flag `ambiguous=random`.
 
 ### Next steps
 1. Add flexibility to auto-detect and adapt to single end reads. This mainly means doing the detection at app start, and adjusting a few pipeline parameters in the process.
 2. Add an option to use Quast to show a deeper report on assembly quality.
 3. Add an option to use Qualimap to show a deeper report on the generated reads mapping to assembly.
+
+### Technical notes
+* **Updating versions** - update the versions of SPAdes or BBTools by modifying the values in `pipeline.cfg`. Those should match the strings in the name of the downloaded objects, so you'll need to be careful with that. Note this only modifies the version of the tool being run and the text in reports - any documentation text that refers to the version (like above) needs to be adjusted by hand.
+* **RQCFilter failures** - RQCFilter runs as a local method (see the KBase SDK docs). Running tests of this pipeline that call out to RQCFilter in a way that has all of its required reference data is tricky, so expect a total of one test failure if you run this module's test suite locally.

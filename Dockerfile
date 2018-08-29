@@ -17,14 +17,21 @@ RUN pip install cffi ndg-httpsclient pyopenssl==17.03 cryptography==2.0.3 --upgr
     && pip install coverage \
     && pip install psutil \
     && pip install pyyaml \
-    && pip install yattag
+    && pip install yattag \
+    && pip install numpy \
+    && pip install matplotlib \
+    && pip install pandas
 
 # -----------------------------------------
 
 WORKDIR /kb/module
+COPY ./ /kb/module
+
+ARG CONFIG_FILE=/kb/module/pipeline.cfg
 
 # install BBTools
-RUN BBMAP=BBMap_38.19.tar.gz \
+RUN BBMAP_VERSION=$(grep BBTools $CONFIG_FILE | sed -r 's/(\S+)\s*=\s*(\S+)/\2/') \
+    && BBMAP=BBMap_$BBMAP_VERSION.tar.gz \
     && wget -O $BBMAP https://sourceforge.net/projects/bbmap/files/$BBMAP/download \
     && tar -xf $BBMAP \
     && rm $BBMAP
@@ -34,8 +41,8 @@ RUN cd /kb/module/bbmap/jni \
     && make -f makefile.linux
 
 # install SPAdes
-RUN cd /opt \
-    && SPADES_VER=3.12.0 \
+RUN SPADES_VER=$(grep SPAdes $CONFIG_FILE | sed -r 's/(\S+)\s*=\s*(\S+)/\2/') \
+    && cd /opt \
     && SPADES=SPAdes-$SPADES_VER-Linux.tar.gz \
     && wget http://cab.spbu.ru/files/release$SPADES_VER/$SPADES \
     && tar -xvzf $SPADES \
@@ -45,7 +52,6 @@ RUN cd /opt \
 
 # Install the module code.
 
-COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module
 

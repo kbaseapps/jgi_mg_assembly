@@ -40,4 +40,6 @@ class BBMapRunner(Step):
             "map_file": sam_output,
             "coverage_file": coverage_stats_output,
             "stats_file": bbmap_stats_output,
+            "command": command,
+            "version_string": self.version_string()
         }

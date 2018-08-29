@@ -9,6 +9,12 @@ class SeqtkRunner(Step):
         super(SeqtkRunner, self).__init__("SeqTK", "SeqTK", SEQTK, scratch_dir, output_dir, True)
 
     def run(self, corrected_reads):
+        """
+        Returns the following dict:
+        - command - string, the run command
+        - version_string - string, the version tag
+        - cleaned_reads - string, path to the zipped cleaned reads file
+        """
         zipped_output = os.path.join(self.output_dir, "bfc", "input.corr.fastq.gz")
         seqtk_params = [
             "dropse",
@@ -29,5 +35,6 @@ class SeqtkRunner(Step):
 
         return {
             "command": command,
-            "cleaned_reads": zipped_output
+            "cleaned_reads": zipped_output,
+            "version_string": self.version_string()
         }

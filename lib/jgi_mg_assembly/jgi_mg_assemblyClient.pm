@@ -122,15 +122,21 @@ sub new
 $params is a jgi_mg_assembly.AssemblyPipelineParams
 $results is a jgi_mg_assembly.AssemblyPipelineResults
 AssemblyPipelineParams is a reference to a hash where the following keys are defined:
-	reads_ref has a value which is a jgi_mg_assembly.reads_ref
+	reads_upa has a value which is a jgi_mg_assembly.reads_upa
 	workspace_name has a value which is a string
-	assembly_name has a value which is a string
-reads_ref is a string
+	output_assembly_name has a value which is a string
+	skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
+	debug has a value which is a jgi_mg_assembly.boolean
+reads_upa is a string
+boolean is an int
 AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
-assembly_ref is a string
+	assembly_output has a value which is a jgi_mg_assembly.assembly_upa
+	cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
+	alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+assembly_upa is a string
+alignment_upa is a string
 
 </pre>
 
@@ -141,15 +147,21 @@ assembly_ref is a string
 $params is a jgi_mg_assembly.AssemblyPipelineParams
 $results is a jgi_mg_assembly.AssemblyPipelineResults
 AssemblyPipelineParams is a reference to a hash where the following keys are defined:
-	reads_ref has a value which is a jgi_mg_assembly.reads_ref
+	reads_upa has a value which is a jgi_mg_assembly.reads_upa
 	workspace_name has a value which is a string
-	assembly_name has a value which is a string
-reads_ref is a string
+	output_assembly_name has a value which is a string
+	skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
+	debug has a value which is a jgi_mg_assembly.boolean
+reads_upa is a string
+boolean is an int
 AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_mg_assembly.assembly_ref
-assembly_ref is a string
+	assembly_output has a value which is a jgi_mg_assembly.assembly_upa
+	cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
+	alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+assembly_upa is a string
+alignment_upa is a string
 
 
 =end text
@@ -297,7 +309,39 @@ sub _validate_version {
 
 
 
-=head2 assembly_ref
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+    @range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 assembly_upa
 
 =over 4
 
@@ -323,7 +367,7 @@ a string
 
 
 
-=head2 reads_ref
+=head2 reads_upa
 
 =over 4
 
@@ -354,10 +398,64 @@ a string
 
 
 
+=head2 alignment_upa
+
+=over 4
+
+
+
+=item Description
+
+Used for the alignment output.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
 =head2 AssemblyPipelineParams
 
 =over 4
 
+
+
+=item Description
+
+Inputs for the Assembly pipeline.
+reads_upa:
+    UPA for the input reads object. This should be a Paired-End Illumina reads file.
+workspace_name:
+    name of the workspace to upload to at the end.
+output_assembly_name:
+    name of the output assembly file.
+skip_rqcfilter:
+    If 1, skip the RQCFilter step of the pipeline. If 0, run it. (default = 0)
+cleaned_reads_name (optional):
+    If not empty, this will cause the finalized, cleaned/filtered reads to be uploaded as a new
+    reads object with this name. This'll be an interleaved paired-end reads object.
+alignment_name (optional):
+    If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
+    filtered, but uncleaned reads to the constructed assembly.
+debug (hidden option):
+    If 1, run in debug mode. A little more verbose, and trims some parameters from various steps
+    so it can run locally(ish). You probably don't want to do this in production, it's meant for
+    testing.
 
 
 =item Definition
@@ -366,9 +464,11 @@ a string
 
 <pre>
 a reference to a hash where the following keys are defined:
-reads_ref has a value which is a jgi_mg_assembly.reads_ref
+reads_upa has a value which is a jgi_mg_assembly.reads_upa
 workspace_name has a value which is a string
-assembly_name has a value which is a string
+output_assembly_name has a value which is a string
+skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
+debug has a value which is a jgi_mg_assembly.boolean
 
 </pre>
 
@@ -377,9 +477,11 @@ assembly_name has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-reads_ref has a value which is a jgi_mg_assembly.reads_ref
+reads_upa has a value which is a jgi_mg_assembly.reads_upa
 workspace_name has a value which is a string
-assembly_name has a value which is a string
+output_assembly_name has a value which is a string
+skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
+debug has a value which is a jgi_mg_assembly.boolean
 
 
 =end text
@@ -394,6 +496,21 @@ assembly_name has a value which is a string
 
 
 
+=item Description
+
+Outputs from the Assembly pipeline.
+report_name:
+    The name of the generated report object.
+report_ref:
+    The UPA for the generated report object.
+assembly_output:
+    The UPA for the newly made assembly object.
+cleaned_reads_output (optional):
+    The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
+alignment_output (optional):
+    The UPA for the uploaded alignment object, if requested by the input.
+
+
 =item Definition
 
 =begin html
@@ -402,7 +519,9 @@ assembly_name has a value which is a string
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_mg_assembly.assembly_ref
+assembly_output has a value which is a jgi_mg_assembly.assembly_upa
+cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
+alignment_output has a value which is a jgi_mg_assembly.alignment_upa
 
 </pre>
 
@@ -413,7 +532,9 @@ assembly_output has a value which is a jgi_mg_assembly.assembly_ref
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_mg_assembly.assembly_ref
+assembly_output has a value which is a jgi_mg_assembly.assembly_upa
+cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
+alignment_output has a value which is a jgi_mg_assembly.alignment_upa
 
 
 =end text

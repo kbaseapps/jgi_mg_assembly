@@ -19,7 +19,10 @@ class Step(object):
         self.output_dir = output_dir
         config = ConfigParser()
         config.read("/kb/module/pipeline.cfg")
-        self.version = config.get("versions", version_name)
+        try:
+            self.version = config.get("versions", version_name)
+        except:
+            self.version = "version unknown"
         self.version_name = version_name
 
     def run(self, *params):
@@ -42,8 +45,12 @@ class Step(object):
         run_command = command
         if self.shell_cmd:
             run_command = " ".join(run_command)
-        p = subprocess.Popen(run_command, cwd=self.scratch_dir, shell=self.shell_cmd)
-        exit_code = p.wait()
+        try:
+            p = subprocess.Popen(run_command, cwd=self.scratch_dir, shell=self.shell_cmd)
+            exit_code = p.wait()
+        except OSError:
+            exit_code = -1
+            print("========================================\nPipeline step {} raised an OSError exception!\nIt's possible that the tool was not found, or should be run in a shell.")
 
         if exit_code == 0:
             print("Successfully ran {}".format(self.step_name), file=sys.stdout)
@@ -52,4 +59,4 @@ class Step(object):
         return (exit_code, ' '.join(command))
 
     def version_string(self):
-        return "{} v{}".format(self.version_name, self.version)
+        return "{} {}".format(self.version_name, self.version)

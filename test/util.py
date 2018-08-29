@@ -1,7 +1,14 @@
+"""
+Contains useful utilities for testing. Fetching configs, building and tearing down workspaces, etc.
+Doesn't have any actual tests.
+"""
 import os  # noqa: F401
 import json  # noqa: F401
 import time
 import shutil
+import sys
+from contextlib import contextmanager
+from StringIO import StringIO
 try:
     from ConfigParser import ConfigParser  # py2
 except:
@@ -100,3 +107,13 @@ def load_pe_reads(fwd_file, rev_file):
         'name': 'MyPairedEndLibrary'
     }
     return ru.upload_reads(pe_reads_params)['obj_ref']
+
+@contextmanager
+def captured_stdout():
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
