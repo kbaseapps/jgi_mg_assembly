@@ -220,8 +220,15 @@ class Pipeline(object):
         }
         # upload filtered reads if we didn't skip RQCFilter (otherwise it's just a copy)
         if filtered_reads_name and not skip_rqcfilter:
+            # unzip the cleaned reads because ReadsUtils won't do it for us.
+            decompressed_reads = os.path.join(self.output_dir, "filtered_reads.fastq")
+            pigz_command = "{} -d -c {} > {}".format(PIGZ, pipeline_result["rqcfilter"]["filtered_fastq_file"], decompressed_reads)
+            p = subprocess.Popen(pigz_command, cwd=self.scratch_dir, shell=True)
+            exit_code = p.wait()
+            if exit_code != 0:
+                raise RuntimeError("Unable to decompress filtered reads for validation! Can't upload them, either!")
             filtered_reads_upa = self.file_util.upload_reads(
-                pipeline_result["rqcfilter"]["filtered_fastq_file"], workspace_name, filtered_reads_name, input_reads
+                decompressed_reads, workspace_name, filtered_reads_name, input_reads
             )
             upload_result["filtered_reads_upa"] = filtered_reads_upa
         # upload the cleaned reads
