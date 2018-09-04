@@ -78,7 +78,8 @@ class FileUtil(object):
             "wsname": workspace_name,
             "fwd_file": file_path,
             "name": reads_name,
-            "source_reads_ref": source_reads_upa
+            "source_reads_ref": source_reads_upa,
+            "interleaved": 1
         })["obj_ref"]
         return reads_upa
 
