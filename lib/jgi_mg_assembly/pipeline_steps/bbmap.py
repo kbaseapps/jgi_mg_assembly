@@ -22,7 +22,7 @@ class BBMapRunner(Step):
         bbmap_stats_output = os.path.join(bbmap_output_dir, "bbmap_stats.txt")
 
         bbmap_params = [
-            "-Xmx24g",
+            "-Xmx100g",
             "nodisk=true",
             "interleaved=true",
             "ambiguous=random",
