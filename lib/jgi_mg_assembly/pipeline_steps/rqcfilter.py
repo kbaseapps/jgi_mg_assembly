@@ -45,7 +45,7 @@ class RQCFilterRunner(Step):
             "khist": 1,
             "removemicrobes": 1,
             "clumpify": 1,
-            "maxmem": 100
+            "maxmem": 500
         }
 
     def run(self, reads_file):
