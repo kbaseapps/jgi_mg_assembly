@@ -12,8 +12,10 @@ from jgi_mg_assembly.pipeline_steps.spades import SpadesRunner
 from jgi_mg_assembly.pipeline_steps.agp import AgpRunner
 from jgi_mg_assembly.pipeline_steps.assemblystats import StatsRunner
 from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
+from BBTools.BBToolsClient import BBTools
 
 PIGZ = "pigz"
+MAX_MEMORY = 200  # GB
 
 class Pipeline(object):
     def __init__(self, callback_url, scratch_dir):
@@ -43,6 +45,8 @@ class Pipeline(object):
         # Fetch reads files
         files = self.file_util.fetch_reads_files([params["reads_upa"]])
         reads_files = list(files.values())
+        # Estimate memory use
+        self._check_memory_use(reads_files[0])
         pipeline_output = self._run_assembly_pipeline(reads_files[0], options)
 
         upload_kwargs = {
@@ -71,6 +75,16 @@ class Pipeline(object):
         return_objects.update(stored_objects)
         return return_objects
 
+    def _check_memory_use(self, reads_file):
+        bbtools = BBTools(self.callback_url, service_ver="beta")
+        mem_estimate = bbtools.run_mem_estimator({
+            "reads_file": reads_file
+        })
+        if mem_estimate["estimate"] > MAX_MEMORY:
+            raise RuntimeError("Your reads are estimated to require {} GB "
+                "of memory to assemble, which is over the limit of {} "
+                "GB available".format(mem_estimate["estimate"], MAX_MEMORY))
+
     def _validate_params(self, params):
         """
         Takes in params as passed to the main pipeline runner function and validates that
@@ -97,6 +111,11 @@ class Pipeline(object):
 
     def _run_assembly_pipeline(self, files, options):
         """
+        :param files: (currently) a single paired-end file for input to the pipeline.
+        :param options: a dict, with possible keys:
+            debug - boolean, generally set to True when tests are running.
+            skip_rqcfilter - boolean, if True, will not run RQCFilter.
+
         Runs the complete JGI assembly pipeline and returns all the outputs from each step.
         1. Get initial reads info.
         2. RQCFilter.
