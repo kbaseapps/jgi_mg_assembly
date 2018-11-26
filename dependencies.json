@@ -1,7 +1,7 @@
 [ {
   "module_name" : "BBTools",
   "type" : "sdk",
-  "version_tag" : "release"
+  "version_tag" : "beta"
 }, {
   "module_name" : "DataFileUtil",
   "type" : "sdk",
