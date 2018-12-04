@@ -15,8 +15,8 @@ from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 from BBTools.BBToolsClient import BBTools
 
 PIGZ = "pigz"
-MAX_MEMORY = 200  # GB memory
-MAX_SIZE = 110    # GB disk
+MAX_MEMORY = 200   # GB memory
+MAX_SIZE = 1100    # GB disk
 
 class Pipeline(object):
     def __init__(self, callback_url, scratch_dir):
