@@ -15,7 +15,8 @@ from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 from BBTools.BBToolsClient import BBTools
 
 PIGZ = "pigz"
-MAX_MEMORY = 200  # GB
+MAX_MEMORY = 200  # GB memory
+MAX_SIZE = 110    # GB disk
 
 class Pipeline(object):
     def __init__(self, callback_url, scratch_dir):
@@ -80,10 +81,17 @@ class Pipeline(object):
         mem_estimate = bbtools.run_mem_estimator({
             "reads_file": reads_file
         })
+        errors = list()
         if mem_estimate["estimate"] > MAX_MEMORY:
-            raise RuntimeError("Your reads are estimated to require {} GB "
+            errors.append("Your reads are estimated to require {} GB "
                 "of memory to assemble, which is over the limit of {} "
-                "GB available".format(mem_estimate["estimate"], MAX_MEMORY))
+                "GB available.".format(round(mem_estimate["estimate"], 2), MAX_MEMORY))
+        if mem_estimate["size"] > MAX_READS_SIZE:
+            errors.append("This size of your reads is approximately {} GB, which exceeds the "
+                "maximum of {} GB.".format(round(mem_estimate["size"], 2), MAX_READS_SIZE)
+        if len(errors):
+            raise RuntimeError("Unable to run the Metagenome Assembly "
+                "Pipeline on your reads: {}".format("\n".join(errors)))
 
     def _validate_params(self, params):
         """
