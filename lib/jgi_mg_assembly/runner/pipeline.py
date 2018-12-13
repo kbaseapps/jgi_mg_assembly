@@ -15,8 +15,8 @@ from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 from BBTools.BBToolsClient import BBTools
 
 PIGZ = "pigz"
-MAX_MEMORY = 200         # GB memory
-MAX_READS_SIZE = 1100    # GB disk
+MAX_MEMORY = 1500        # GB memory
+MAX_READS_SIZE = 200     # GB disk
 
 class Pipeline(object):
     def __init__(self, callback_url, scratch_dir):
@@ -46,8 +46,8 @@ class Pipeline(object):
         # Fetch reads files
         files = self.file_util.fetch_reads_files([params["reads_upa"]])
         reads_files = list(files.values())
-        # Estimate memory use
-        self._check_memory_use(reads_files[0])
+
+        # run the pipeline.
         pipeline_output = self._run_assembly_pipeline(reads_files[0], options)
 
         upload_kwargs = {
@@ -159,6 +159,10 @@ class Pipeline(object):
         seqtk = SeqtkRunner(self.scratch_dir, self.output_dir)
         seqtk_output = seqtk.run(bfc_output["corrected_reads"])
 
+        # Check that RAM requirements for metaSpades.py won't be exceded.
+        # We need to count unique kmers of filtered reads
+        self._check_memory_use(seqtk_output["cleaned_reads"])
+
         # get info on the filtered/corrected reads
         reads_info_corrected = readlength.run(seqtk_output["cleaned_reads"], "corrected_readlen.txt")
 
@@ -172,7 +176,11 @@ class Pipeline(object):
         # * scaffolds_file -- if exists
         # * contigs_file -- if exists
         spades = SpadesRunner(self.scratch_dir, self.output_dir)
-        spades_output = spades.run(seqtk_output["cleaned_reads"], reads_info_corrected, {})
+        spades_output = spades.run(
+            seqtk_output["cleaned_reads"],
+            reads_info_corrected,
+            {"max_memory": MAX_MEMORY}
+        )
 
         # Polish the scaffolds and get an agp file (and legend)
         # keys: scaffolds, contigs, agp, legend (all file paths)
