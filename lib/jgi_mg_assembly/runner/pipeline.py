@@ -176,7 +176,11 @@ class Pipeline(object):
         # * scaffolds_file -- if exists
         # * contigs_file -- if exists
         spades = SpadesRunner(self.scratch_dir, self.output_dir)
-        spades_output = spades.run(seqtk_output["cleaned_reads"], reads_info_corrected, {})
+        spades_output = spades.run(
+            seqtk_output["cleaned_reads"],
+            reads_info_corrected,
+            {"max_memory": MAX_MEMORY}
+        )
 
         # Polish the scaffolds and get an agp file (and legend)
         # keys: scaffolds, contigs, agp, legend (all file paths)

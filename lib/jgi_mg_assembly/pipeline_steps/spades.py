@@ -22,6 +22,11 @@ class SpadesRunner(Step):
         However, if the max read length < any of those k, that'll be omitted.
         For example, if your input reads are such that the longest one is 100 bases, this'll
         omit k=127.
+        :param input_file: string or path to the input paired-end reads file
+        :param reads_info: dict
+            - info about the reads from readlength.py. This uses the output_file and avg keys.
+        :param options: dict
+            - "max_memory" - max allowed memory in GB (default 2000)
         """
         spades_output_dir = os.path.join(self.output_dir, "spades", "spades3")
         mkdir(spades_output_dir)
@@ -29,11 +34,13 @@ class SpadesRunner(Step):
         spades_kmers = [33, 55, 77, 99, 127]
         used_kmers = [k for k in spades_kmers if k <= reads_info["avg"]]
 
+        max_memory = str(options.get("max_memory", 2000))
+
         spades_params = ["--only-assembler",
                          "-k", ",".join(map(str, used_kmers)),
                          "--meta",
                          "-t", "32",
-                         "-m", "2000",
+                         "-m", max_memory,
                          "-o", spades_output_dir,
                          "--12", input_file]
 
