@@ -15,7 +15,7 @@ from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
 from BBTools.BBToolsClient import BBTools
 
 PIGZ = "pigz"
-MAX_MEMORY = 200         # GB memory
+MAX_MEMORY = 1500        # GB memory
 MAX_READS_SIZE = 200     # GB disk
 
 class Pipeline(object):
