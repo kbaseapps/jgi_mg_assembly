@@ -111,11 +111,11 @@ class Pipeline(object):
             errors.append("Filtered reads are not created when skipping the RQCFilter step, so do not set filtered_reads_name")
         if params.get("alignment_name"):
             if not params.get("skip_rqcfilter") and not params.get("filtered_reads_name"):
-                errors.append("When uploading an alignment, and not skipping the RQCFilter step, the filtered reads must be uploaded as well and require a name.")
+                errors.append("When uploading an alignment, and performing the RQCFilter step, the filtered reads must also be saved, and require a name.")
         if len(errors):
             for error in errors:
                 print(error)
-            raise ValueError("Errors found in app parameters! See above for details.")
+            raise ValueError("; ".join(errors))
 
     def _run_assembly_pipeline(self, files, options):
         """

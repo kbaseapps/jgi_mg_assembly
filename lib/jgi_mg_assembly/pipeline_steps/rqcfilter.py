@@ -78,7 +78,7 @@ class RQCFilterRunner(Step):
         "filtered_fastq_file" is the unchanged fastq file, other than gzipping it.
         run_log is just an empty (but existing!) file.
         """
-        print("NOT running RQCFilter, just dummying up some results.")
+        print("NOT running RQCFilter, just putting together some results.")
         # make the dummy output dir
         outdir = os.path.join(self.scratch_dir, "dummy_rqcfilter_output_{}".format(int(time() * 1000)))
         mkdir(outdir)
