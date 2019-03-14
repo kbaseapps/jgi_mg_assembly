@@ -34,7 +34,7 @@ parameters :
             The Paired-End Reads to assemble
     output_assembly_name :
         ui-name : |
-            Assembly Output
+            Assembly Output (required)
         short-hint : |
             The name of the assembled output
     skip_rqcfilter:
@@ -44,17 +44,17 @@ parameters :
             If selected, skips running the RQCFilter step of the pipeline, which filters out adapters, low quality reads, etc. See the catalog page for details.
     cleaned_reads_name:
         ui-name: |
-            Cleaned Reads Output (optional)
+            Cleaned Reads Output (optional, set a name to save)
         short-hint: |
             If set, stores the processed reads as a new object. These will have been cleaned by processing with RQCFilter, BFC, and SeqTK.
     filtered_reads_name :
         ui-name: |
-            Filtered Reads Output (optional - must be set if not skipping RQCFilter, and saving the alignment)
+            Filtered Reads Output (must be set if running RQCFilter and saving the alignment.)
         short-hint: |
             If set, this will save the RQCFiltered reads as a new Reads object. This MUST be set if the final alignment is to be saved and RQCFilter is not skipped.
     output_alignment_name :
         ui-name: |
-            Assembly Alignment Name (optional)
+            Assembly Alignment Name (optional, set a name to save the alignment)
         short-hint: |
             If set, this will save the BAM alignment between the filtered reads and the final assembly. Note that if not skipping RQCFilter, then the Filtered Reads must be saved as well.
 
