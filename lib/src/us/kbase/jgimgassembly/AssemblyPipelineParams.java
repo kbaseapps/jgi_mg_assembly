@@ -26,9 +26,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * cleaned_reads_name (optional):
  *     If not empty, this will cause the finalized, cleaned/filtered reads to be uploaded as a new
  *     reads object with this name. This'll be an interleaved paired-end reads object.
- * alignment_name (optional):
- *     If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
- *     filtered, but uncleaned reads to the constructed assembly.
+ * filtered_reads_name (optional, unless alignment_name is present):
+ *     If not empty, this will cause the RQCFiltered reads to be uploaded as a new reads object. These
+ *     are the reads aligned to the final assembly, so these are needed to associate with the
+ *     final alignment if that alignment is to be kept.
  * debug (hidden option):
  *     If 1, run in debug mode. A little more verbose, and trims some parameters from various steps
  *     so it can run locally(ish). You probably don't want to do this in production, it's meant for
@@ -42,6 +43,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "reads_upa",
     "workspace_name",
     "output_assembly_name",
+    "cleaned_reads_name",
+    "filtered_reads_name",
     "skip_rqcfilter",
     "debug"
 })
@@ -53,6 +56,10 @@ public class AssemblyPipelineParams {
     private String workspaceName;
     @JsonProperty("output_assembly_name")
     private String outputAssemblyName;
+    @JsonProperty("cleaned_reads_name")
+    private String cleanedReadsName;
+    @JsonProperty("filtered_reads_name")
+    private String filteredReadsName;
     @JsonProperty("skip_rqcfilter")
     private Long skipRqcfilter;
     @JsonProperty("debug")
@@ -104,6 +111,36 @@ public class AssemblyPipelineParams {
         return this;
     }
 
+    @JsonProperty("cleaned_reads_name")
+    public String getCleanedReadsName() {
+        return cleanedReadsName;
+    }
+
+    @JsonProperty("cleaned_reads_name")
+    public void setCleanedReadsName(String cleanedReadsName) {
+        this.cleanedReadsName = cleanedReadsName;
+    }
+
+    public AssemblyPipelineParams withCleanedReadsName(String cleanedReadsName) {
+        this.cleanedReadsName = cleanedReadsName;
+        return this;
+    }
+
+    @JsonProperty("filtered_reads_name")
+    public String getFilteredReadsName() {
+        return filteredReadsName;
+    }
+
+    @JsonProperty("filtered_reads_name")
+    public void setFilteredReadsName(String filteredReadsName) {
+        this.filteredReadsName = filteredReadsName;
+    }
+
+    public AssemblyPipelineParams withFilteredReadsName(String filteredReadsName) {
+        this.filteredReadsName = filteredReadsName;
+        return this;
+    }
+
     @JsonProperty("skip_rqcfilter")
     public Long getSkipRqcfilter() {
         return skipRqcfilter;
@@ -146,7 +183,7 @@ public class AssemblyPipelineParams {
 
     @Override
     public String toString() {
-        return ((((((((((((("AssemblyPipelineParams"+" [readsUpa=")+ readsUpa)+", workspaceName=")+ workspaceName)+", outputAssemblyName=")+ outputAssemblyName)+", skipRqcfilter=")+ skipRqcfilter)+", debug=")+ debug)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((("AssemblyPipelineParams"+" [readsUpa=")+ readsUpa)+", workspaceName=")+ workspaceName)+", outputAssemblyName=")+ outputAssemblyName)+", cleanedReadsName=")+ cleanedReadsName)+", filteredReadsName=")+ filteredReadsName)+", skipRqcfilter=")+ skipRqcfilter)+", debug=")+ debug)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -125,6 +125,8 @@ AssemblyPipelineParams is a reference to a hash where the following keys are def
 	reads_upa has a value which is a jgi_mg_assembly.reads_upa
 	workspace_name has a value which is a string
 	output_assembly_name has a value which is a string
+	cleaned_reads_name has a value which is a string
+	filtered_reads_name has a value which is a string
 	skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
 	debug has a value which is a jgi_mg_assembly.boolean
 reads_upa is a string
@@ -132,11 +134,10 @@ boolean is an int
 AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_mg_assembly.assembly_upa
-	cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
-	alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+	assembly_upa has a value which is a jgi_mg_assembly.assembly_upa
+	cleaned_reads_upa has a value which is a jgi_mg_assembly.reads_upa
+	filtered_reads_upa has a value which is a jgi_mg_assembly.reads_upa
 assembly_upa is a string
-alignment_upa is a string
 
 </pre>
 
@@ -150,6 +151,8 @@ AssemblyPipelineParams is a reference to a hash where the following keys are def
 	reads_upa has a value which is a jgi_mg_assembly.reads_upa
 	workspace_name has a value which is a string
 	output_assembly_name has a value which is a string
+	cleaned_reads_name has a value which is a string
+	filtered_reads_name has a value which is a string
 	skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
 	debug has a value which is a jgi_mg_assembly.boolean
 reads_upa is a string
@@ -157,11 +160,10 @@ boolean is an int
 AssemblyPipelineResults is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
-	assembly_output has a value which is a jgi_mg_assembly.assembly_upa
-	cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
-	alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+	assembly_upa has a value which is a jgi_mg_assembly.assembly_upa
+	cleaned_reads_upa has a value which is a jgi_mg_assembly.reads_upa
+	filtered_reads_upa has a value which is a jgi_mg_assembly.reads_upa
 assembly_upa is a string
-alignment_upa is a string
 
 
 =end text
@@ -398,37 +400,6 @@ a string
 
 
 
-=head2 alignment_upa
-
-=over 4
-
-
-
-=item Description
-
-Used for the alignment output.
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a string
-</pre>
-
-=end html
-
-=begin text
-
-a string
-
-=end text
-
-=back
-
-
-
 =head2 AssemblyPipelineParams
 
 =over 4
@@ -449,9 +420,10 @@ skip_rqcfilter:
 cleaned_reads_name (optional):
     If not empty, this will cause the finalized, cleaned/filtered reads to be uploaded as a new
     reads object with this name. This'll be an interleaved paired-end reads object.
-alignment_name (optional):
-    If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
-    filtered, but uncleaned reads to the constructed assembly.
+filtered_reads_name (optional, unless alignment_name is present):
+    If not empty, this will cause the RQCFiltered reads to be uploaded as a new reads object. These
+    are the reads aligned to the final assembly, so these are needed to associate with the
+    final alignment if that alignment is to be kept.
 debug (hidden option):
     If 1, run in debug mode. A little more verbose, and trims some parameters from various steps
     so it can run locally(ish). You probably don't want to do this in production, it's meant for
@@ -467,6 +439,8 @@ a reference to a hash where the following keys are defined:
 reads_upa has a value which is a jgi_mg_assembly.reads_upa
 workspace_name has a value which is a string
 output_assembly_name has a value which is a string
+cleaned_reads_name has a value which is a string
+filtered_reads_name has a value which is a string
 skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
 debug has a value which is a jgi_mg_assembly.boolean
 
@@ -480,6 +454,8 @@ a reference to a hash where the following keys are defined:
 reads_upa has a value which is a jgi_mg_assembly.reads_upa
 workspace_name has a value which is a string
 output_assembly_name has a value which is a string
+cleaned_reads_name has a value which is a string
+filtered_reads_name has a value which is a string
 skip_rqcfilter has a value which is a jgi_mg_assembly.boolean
 debug has a value which is a jgi_mg_assembly.boolean
 
@@ -503,12 +479,12 @@ report_name:
     The name of the generated report object.
 report_ref:
     The UPA for the generated report object.
-assembly_output:
+assembly_upa:
     The UPA for the newly made assembly object.
-cleaned_reads_output (optional):
+cleaned_reads_upa (optional):
     The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
-alignment_output (optional):
-    The UPA for the uploaded alignment object, if requested by the input.
+filtered_reads_upa (optional):
+    The UPA for the RQCFiltered reads, if requested by the input, AND skip_rqcfilter is not true.
 
 
 =item Definition
@@ -519,9 +495,9 @@ alignment_output (optional):
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_mg_assembly.assembly_upa
-cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
-alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+assembly_upa has a value which is a jgi_mg_assembly.assembly_upa
+cleaned_reads_upa has a value which is a jgi_mg_assembly.reads_upa
+filtered_reads_upa has a value which is a jgi_mg_assembly.reads_upa
 
 </pre>
 
@@ -532,9 +508,9 @@ alignment_output has a value which is a jgi_mg_assembly.alignment_upa
 a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
-assembly_output has a value which is a jgi_mg_assembly.assembly_upa
-cleaned_reads_output has a value which is a jgi_mg_assembly.reads_upa
-alignment_output has a value which is a jgi_mg_assembly.alignment_upa
+assembly_upa has a value which is a jgi_mg_assembly.assembly_upa
+cleaned_reads_upa has a value which is a jgi_mg_assembly.reads_upa
+filtered_reads_upa has a value which is a jgi_mg_assembly.reads_upa
 
 
 =end text

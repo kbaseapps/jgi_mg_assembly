@@ -19,12 +19,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *     The name of the generated report object.
  * report_ref:
  *     The UPA for the generated report object.
- * assembly_output:
+ * assembly_upa:
  *     The UPA for the newly made assembly object.
- * cleaned_reads_output (optional):
+ * cleaned_reads_upa (optional):
  *     The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
- * alignment_output (optional):
- *     The UPA for the uploaded alignment object, if requested by the input.
+ * filtered_reads_upa (optional):
+ *     The UPA for the RQCFiltered reads, if requested by the input, AND skip_rqcfilter is not true.
  * </pre>
  * 
  */
@@ -33,9 +33,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "report_name",
     "report_ref",
-    "assembly_output",
-    "cleaned_reads_output",
-    "alignment_output"
+    "assembly_upa",
+    "cleaned_reads_upa",
+    "filtered_reads_upa"
 })
 public class AssemblyPipelineResults {
 
@@ -43,12 +43,12 @@ public class AssemblyPipelineResults {
     private String reportName;
     @JsonProperty("report_ref")
     private String reportRef;
-    @JsonProperty("assembly_output")
-    private String assemblyOutput;
-    @JsonProperty("cleaned_reads_output")
-    private String cleanedReadsOutput;
-    @JsonProperty("alignment_output")
-    private String alignmentOutput;
+    @JsonProperty("assembly_upa")
+    private String assemblyUpa;
+    @JsonProperty("cleaned_reads_upa")
+    private String cleanedReadsUpa;
+    @JsonProperty("filtered_reads_upa")
+    private String filteredReadsUpa;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("report_name")
@@ -81,48 +81,48 @@ public class AssemblyPipelineResults {
         return this;
     }
 
-    @JsonProperty("assembly_output")
-    public String getAssemblyOutput() {
-        return assemblyOutput;
+    @JsonProperty("assembly_upa")
+    public String getAssemblyUpa() {
+        return assemblyUpa;
     }
 
-    @JsonProperty("assembly_output")
-    public void setAssemblyOutput(String assemblyOutput) {
-        this.assemblyOutput = assemblyOutput;
+    @JsonProperty("assembly_upa")
+    public void setAssemblyUpa(String assemblyUpa) {
+        this.assemblyUpa = assemblyUpa;
     }
 
-    public AssemblyPipelineResults withAssemblyOutput(String assemblyOutput) {
-        this.assemblyOutput = assemblyOutput;
+    public AssemblyPipelineResults withAssemblyUpa(String assemblyUpa) {
+        this.assemblyUpa = assemblyUpa;
         return this;
     }
 
-    @JsonProperty("cleaned_reads_output")
-    public String getCleanedReadsOutput() {
-        return cleanedReadsOutput;
+    @JsonProperty("cleaned_reads_upa")
+    public String getCleanedReadsUpa() {
+        return cleanedReadsUpa;
     }
 
-    @JsonProperty("cleaned_reads_output")
-    public void setCleanedReadsOutput(String cleanedReadsOutput) {
-        this.cleanedReadsOutput = cleanedReadsOutput;
+    @JsonProperty("cleaned_reads_upa")
+    public void setCleanedReadsUpa(String cleanedReadsUpa) {
+        this.cleanedReadsUpa = cleanedReadsUpa;
     }
 
-    public AssemblyPipelineResults withCleanedReadsOutput(String cleanedReadsOutput) {
-        this.cleanedReadsOutput = cleanedReadsOutput;
+    public AssemblyPipelineResults withCleanedReadsUpa(String cleanedReadsUpa) {
+        this.cleanedReadsUpa = cleanedReadsUpa;
         return this;
     }
 
-    @JsonProperty("alignment_output")
-    public String getAlignmentOutput() {
-        return alignmentOutput;
+    @JsonProperty("filtered_reads_upa")
+    public String getFilteredReadsUpa() {
+        return filteredReadsUpa;
     }
 
-    @JsonProperty("alignment_output")
-    public void setAlignmentOutput(String alignmentOutput) {
-        this.alignmentOutput = alignmentOutput;
+    @JsonProperty("filtered_reads_upa")
+    public void setFilteredReadsUpa(String filteredReadsUpa) {
+        this.filteredReadsUpa = filteredReadsUpa;
     }
 
-    public AssemblyPipelineResults withAlignmentOutput(String alignmentOutput) {
-        this.alignmentOutput = alignmentOutput;
+    public AssemblyPipelineResults withFilteredReadsUpa(String filteredReadsUpa) {
+        this.filteredReadsUpa = filteredReadsUpa;
         return this;
     }
 
@@ -138,7 +138,7 @@ public class AssemblyPipelineResults {
 
     @Override
     public String toString() {
-        return ((((((((((((("AssemblyPipelineResults"+" [reportName=")+ reportName)+", reportRef=")+ reportRef)+", assemblyOutput=")+ assemblyOutput)+", cleanedReadsOutput=")+ cleanedReadsOutput)+", alignmentOutput=")+ alignmentOutput)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("AssemblyPipelineResults"+" [reportName=")+ reportName)+", reportRef=")+ reportRef)+", assemblyUpa=")+ assemblyUpa)+", cleanedReadsUpa=")+ cleanedReadsUpa)+", filteredReadsUpa=")+ filteredReadsUpa)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

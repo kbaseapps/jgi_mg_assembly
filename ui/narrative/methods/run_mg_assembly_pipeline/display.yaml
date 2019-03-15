@@ -52,11 +52,6 @@ parameters :
             Filtered Reads Output (must be set if running RQCFilter and saving the alignment.)
         short-hint: |
             If set, this will save the RQCFiltered reads as a new Reads object. This MUST be set if the final alignment is to be saved and RQCFilter is not skipped.
-    output_alignment_name :
-        ui-name: |
-            Assembly Alignment Name (optional, set a name to save the alignment)
-        short-hint: |
-            If set, this will save the BAM alignment between the filtered reads and the final assembly. Note that if not skipping RQCFilter, then the Filtered Reads must be saved as well.
 
 description : |
     <p>
@@ -66,8 +61,7 @@ description : |
     During the process of filtering and cleaning the reads, and mapping the results to the assembly, several optional data objects are made. You can save these by giving them names in their respective fields, described below. If you do not name these objects, they will not be stored.
     <ul>
         <li>Cleaned Reads Output - This is the set of paired-end reads that have been filtered with RQCFilter (if that setting is used), and cleaned with BFC and SeqTK.</li>
-        <li>Filtered Reads Output - This is the set of reads that have been filtered with RQCFilter. If the option to skip RQCFilter is selected and a name is given here, an error will happen and your pipeline run will not finish. Also note that if you want to save the final assembly alignment made with BBMap, AND you do not skip the RQCFilter step, this needs to be saved as well.
-        <li>Assembly Alignment Name</li> - This is the BAM alignment between the final assembly and the filtered reads (if filtering is done). Note that saving this also requires saving the filtered reads, if filtering was done.</li>
+        <li>Filtered Reads Output - This is the set of reads that have been filtered with RQCFilter. If the option to skip RQCFilter is selected and a name is given here, an error will happen and your pipeline run will not finish.
     </ul>
     <p>
     <b>Note that this pipeline currently only supports paired-end Illumina reads!</b> If you have other data you would like to use, please <a href="https://kbase.us/contact-us">contact us</a>.

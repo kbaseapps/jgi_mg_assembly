@@ -53,7 +53,6 @@ class Pipeline(object):
         upload_kwargs = {
             "cleaned_reads_name": params.get("cleaned_reads_name"),
             "filtered_reads_name": params.get("filtered_reads_name"),
-            "alignment_name": params.get("alignment_name"),
             "skip_rqcfilter": params.get("skip_rqcfilter"),
             "input_reads": params.get("reads_upa")
         }
@@ -108,10 +107,7 @@ class Pipeline(object):
         if params.get("workspace_name") is None:
             errors.append("Missing workspace name for the output data!")
         if params.get("skip_rqcfilter") and params.get("filtered_reads_name"):
-            errors.append("Filtered reads are not created when skipping the RQCFilter step, so do not set filtered_reads_name")
-        if params.get("alignment_name"):
-            if not params.get("skip_rqcfilter") and not params.get("filtered_reads_name"):
-                errors.append("When uploading an alignment, and performing the RQCFilter step, the filtered reads must also be saved, and require a name.")
+            errors.append("Filtered reads are not created when skipping the RQCFilter step, so do not set filtered_reads_name (Filtered Reads Output).")
         if len(errors):
             for error in errors:
                 print(error)
@@ -214,7 +210,6 @@ class Pipeline(object):
     def _upload_pipeline_result(self, pipeline_result, workspace_name, assembly_name,
                                 filtered_reads_name=None,
                                 cleaned_reads_name=None,
-                                alignment_name=None,
                                 skip_rqcfilter=False,
                                 input_reads=None):
         """
@@ -225,26 +220,11 @@ class Pipeline(object):
             - optional, if cleaned_reads_name isn't None
         3. Filtered reads - passed RQCFilter
             - optional, if filtered_reads_name isn't None AND skip_rqcfilter is False
-        4. BBMap alignment
-            - optional, if alignment_name isn't None.
-                - case 1: if RQCFilter was skipped, then the original input reads UPA is used in this alignment,
-                          and input_reads is required
-                - case 2: if RQCFilter wasn't skipped, then the filtered reads UPA is used, and must be uploaded,
-                          so filtered_reads_name is required
         returns a dict of UPAs with the following keys:
         - assembly_upa - the assembly (always)
         - filtered_reads_upa - the RQCFiltered reads (optionally)
         - cleaned_reads_upa - the RQCFiltered -> BFC -> SeqTK cleaned reads (optional)
-        - alignment_upa - the BAM alignment object (optional), if alignment_name AND (filtered_reads_name OR (skip_rqcfilter AND input_reads))
         """
-
-        # Check params first. Also done above, before everything's run, but this is some trickiness.
-        if alignment_name:
-            if skip_rqcfilter:
-                if not input_reads:
-                    raise ValueError("The original input reads UPA is needed to upload an alignment when the RQCFilter step is skipped!")
-            elif not filtered_reads_name:
-                raise ValueError("The filtered reads must be given a name and uploaded when choosing to save the alignment!")
 
         # upload the assembly
         uploaded_assy_upa = self.file_util.upload_assembly(
@@ -279,20 +259,6 @@ class Pipeline(object):
                 decompressed_reads, workspace_name, cleaned_reads_name, input_reads
             )
             upload_result["cleaned_reads_upa"] = cleaned_reads_upa
-        # upload the alignment
-        if alignment_name:
-            if skip_rqcfilter and input_reads:
-                aligned_reads_upa = input_reads
-            else:
-                aligned_reads_upa = filtered_reads_upa
-            alignment_upa = self.file_util.upload_alignment(
-                pipeline_result["bbmap"]["map_file"],
-                aligned_reads_upa,
-                uploaded_assy_upa,
-                workspace_name,
-                alignment_name
-            )
-            upload_result["alignment_upa"] = alignment_upa
         return upload_result
 
     def _build_and_upload_report(self, pipeline_output, output_objects, workspace_name):
@@ -332,11 +298,6 @@ class Pipeline(object):
             stored_objects.append({
                 "ref": output_objects["filtered_reads_upa"],
                 "description": "Reads filtered by RQCFilter, and used to align against the assembled contigs."
-            })
-        if "alignment_upa" in output_objects:
-            stored_objects.append({
-                "ref": output_objects["alignment_upa"],
-                "description": "BBMap alignment made from the filtered reads aligned against the assembled contigs."
             })
 
         return report_util.make_report(pipeline_output, workspace_name, stored_objects)
