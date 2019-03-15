@@ -14,9 +14,6 @@ module jgi_mg_assembly {
     /* Should be only Paired-end reads. */
     typedef string reads_upa;
 
-    /* Used for the alignment output. */
-    typedef string alignment_upa;
-
     /*
     Inputs for the Assembly pipeline.
     reads_upa:
@@ -34,9 +31,6 @@ module jgi_mg_assembly {
         If not empty, this will cause the RQCFiltered reads to be uploaded as a new reads object. These
         are the reads aligned to the final assembly, so these are needed to associate with the
         final alignment if that alignment is to be kept.
-    alignment_name (optional):
-        If not empty, this will save and upload the BBMap-generated BAM file that aligns the original
-        filtered, but uncleaned reads to the constructed assembly.
     debug (hidden option):
         If 1, run in debug mode. A little more verbose, and trims some parameters from various steps
         so it can run locally(ish). You probably don't want to do this in production, it's meant for
@@ -48,7 +42,6 @@ module jgi_mg_assembly {
         string output_assembly_name;
         string cleaned_reads_name;
         string filtered_reads_name;
-        string alignment_name;
         boolean skip_rqcfilter;
         boolean debug;
     } AssemblyPipelineParams;
@@ -65,8 +58,6 @@ module jgi_mg_assembly {
         The UPA for the finalized, cleaned reads that are assembled in the pipeline, if requested by the input.
     filtered_reads_upa (optional):
         The UPA for the RQCFiltered reads, if requested by the input, AND skip_rqcfilter is not true.
-    alignment_upa (optional):
-        The UPA for the uploaded alignment object, if requested by the input.
     */
     typedef structure {
         string report_name;
@@ -74,7 +65,6 @@ module jgi_mg_assembly {
         assembly_upa assembly_upa;
         reads_upa cleaned_reads_upa;
         reads_upa filtered_reads_upa;
-        alignment_upa alignment_upa;
     } AssemblyPipelineResults;
 
     funcdef run_mg_assembly_pipeline(AssemblyPipelineParams params)

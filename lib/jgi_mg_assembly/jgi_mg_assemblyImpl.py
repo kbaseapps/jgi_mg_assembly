@@ -26,9 +26,9 @@ class jgi_mg_assembly:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.3.3"
+    VERSION = "0.5.5"
     GIT_URL = "https://github.com/briehl/jgi_mg_assembly"
-    GIT_COMMIT_HASH = "f3e3fbf41a3ef58a312a4ecf63d8c90a38bec365"
+    GIT_COMMIT_HASH = "2bd8a5ce33c46ef2d3a6da603ee627e9d02d2082"
 
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block
@@ -59,33 +59,35 @@ class jgi_mg_assembly:
            0, run it. (default = 0) cleaned_reads_name (optional): If not
            empty, this will cause the finalized, cleaned/filtered reads to be
            uploaded as a new reads object with this name. This'll be an
-           interleaved paired-end reads object. alignment_name (optional): If
-           not empty, this will save and upload the BBMap-generated BAM file
-           that aligns the original filtered, but uncleaned reads to the
-           constructed assembly. debug (hidden option): If 1, run in debug
+           interleaved paired-end reads object. filtered_reads_name
+           (optional, unless alignment_name is present): If not empty, this
+           will cause the RQCFiltered reads to be uploaded as a new reads
+           object. These are the reads aligned to the final assembly, so
+           these are needed to associate with the final alignment if that
+           alignment is to be kept. debug (hidden option): If 1, run in debug
            mode. A little more verbose, and trims some parameters from
            various steps so it can run locally(ish). You probably don't want
            to do this in production, it's meant for testing.) -> structure:
            parameter "reads_upa" of type "reads_upa" (Should be only
            Paired-end reads.), parameter "workspace_name" of String,
            parameter "output_assembly_name" of String, parameter
-           "skip_rqcfilter" of type "boolean" (A boolean - 0 for false, 1 for
-           true. @range (0, 1)), parameter "debug" of type "boolean" (A
-           boolean - 0 for false, 1 for true. @range (0, 1))
+           "cleaned_reads_name" of String, parameter "filtered_reads_name" of
+           String, parameter "skip_rqcfilter" of type "boolean" (A boolean -
+           0 for false, 1 for true. @range (0, 1)), parameter "debug" of type
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
         :returns: instance of type "AssemblyPipelineResults" (Outputs from
            the Assembly pipeline. report_name: The name of the generated
            report object. report_ref: The UPA for the generated report
-           object. assembly_output: The UPA for the newly made assembly
-           object. cleaned_reads_output (optional): The UPA for the
-           finalized, cleaned reads that are assembled in the pipeline, if
-           requested by the input. alignment_output (optional): The UPA for
-           the uploaded alignment object, if requested by the input.) ->
-           structure: parameter "report_name" of String, parameter
-           "report_ref" of String, parameter "assembly_output" of type
-           "assembly_upa", parameter "cleaned_reads_output" of type
-           "reads_upa" (Should be only Paired-end reads.), parameter
-           "alignment_output" of type "alignment_upa" (Used for the alignment
-           output.)
+           object. assembly_upa: The UPA for the newly made assembly object.
+           cleaned_reads_upa (optional): The UPA for the finalized, cleaned
+           reads that are assembled in the pipeline, if requested by the
+           input. filtered_reads_upa (optional): The UPA for the RQCFiltered
+           reads, if requested by the input, AND skip_rqcfilter is not true.)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String, parameter "assembly_upa" of type
+           "assembly_upa", parameter "cleaned_reads_upa" of type "reads_upa"
+           (Should be only Paired-end reads.), parameter "filtered_reads_upa"
+           of type "reads_upa" (Should be only Paired-end reads.)
         """
         # ctx is the context object
         # return variables are: results
