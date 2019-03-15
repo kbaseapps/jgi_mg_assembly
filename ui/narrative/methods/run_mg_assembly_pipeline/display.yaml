@@ -49,9 +49,9 @@ parameters :
             If set, stores the processed reads as a new object. These will have been cleaned by processing with RQCFilter, BFC, and SeqTK.
     filtered_reads_name :
         ui-name: |
-            Filtered Reads Output (must be set if running RQCFilter and saving the alignment.)
+            Filtered Reads Output (optional, do not set if skipping RQCFilter)
         short-hint: |
-            If set, this will save the RQCFiltered reads as a new Reads object. This MUST be set if the final alignment is to be saved and RQCFilter is not skipped.
+            If set, this will save the RQCFiltered reads as a new Reads object. If skipping the RQCFilter step of the pipeline, do not set.
 
 description : |
     <p>
