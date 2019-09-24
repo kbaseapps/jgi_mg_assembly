@@ -9,8 +9,8 @@ import subprocess
 import re
 import json
 from pprint import pprint
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from KBaseReport.KBaseReportClient import KBaseReport
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.KBaseReportClient import KBaseReport
 from .util import mkdir
 from .graphics import generate_graphics
 
@@ -133,7 +133,7 @@ class ReportUtil(object):
         }
         with zipfile.ZipFile(result_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as report_zip:
             # add reads info report
-            for step, file_list in report_files.iteritems():
+            for step, file_list in report_files.items():
                 for f in file_list:
                     if f in pipeline_output[step] and os.path.exists(pipeline_output[step][f]):
                         zip_path = os.path.join(step, os.path.basename(pipeline_output[step][f]))
@@ -316,7 +316,7 @@ version 1.0.0 (5). It is based on the JGI pipeline: jgi_mg_meta_rqc.py (version 
             counts["error"] = counts["error"] + "Can't calculate number of input reads!"
             counts["input_reads"] = 0
         else:
-            result = re.search(r'^(\d+).*$', lines[0])
+            result = re.search(r'^(\d+).*$', lines[0].decode('utf-8'))
             if hasattr(result, 'group'):
                 if result.group(1):
                     num_input_reads = result.group(1)

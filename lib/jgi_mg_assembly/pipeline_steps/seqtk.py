@@ -1,4 +1,4 @@
-from step import Step
+from jgi_mg_assembly.pipeline_steps.step import Step
 import os
 
 SEQTK = "/kb/module/bin/seqtk"

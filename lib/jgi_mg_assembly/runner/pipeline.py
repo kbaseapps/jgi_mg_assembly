@@ -12,7 +12,7 @@ from jgi_mg_assembly.pipeline_steps.spades import SpadesRunner
 from jgi_mg_assembly.pipeline_steps.agp import AgpRunner
 from jgi_mg_assembly.pipeline_steps.assemblystats import StatsRunner
 from jgi_mg_assembly.pipeline_steps.bbmap import BBMapRunner
-from BBTools.BBToolsClient import BBTools
+from installed_clients.BBToolsClient import BBTools
 
 PIGZ = "pigz"
 MAX_MEMORY = 1500        # GB memory

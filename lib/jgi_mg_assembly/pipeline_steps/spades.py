@@ -2,7 +2,7 @@
 Handles running SPAdes from command line, using the command and parameters provided
 by the JGI Metagenome Assembly Pipeline.
 """
-from step import Step
+from jgi_mg_assembly.pipeline_steps.step import Step
 import os
 from jgi_mg_assembly.utils.util import (
     mkdir,

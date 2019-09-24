@@ -8,7 +8,7 @@ and returns the number of reads. If there's any problems, this just raises a Val
 """
 from __future__ import print_function
 import os
-from step import Step
+from jgi_mg_assembly.pipeline_steps.step import Step
 from jgi_mg_assembly.utils.util import mkdir
 
 BBTOOLS_READLEN = "/kb/module/bbmap/readlength.sh"
