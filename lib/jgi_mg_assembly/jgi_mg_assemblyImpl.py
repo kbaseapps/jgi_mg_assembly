@@ -4,8 +4,8 @@
 import os
 from Bio import SeqIO
 from pprint import pprint, pformat
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
-from KBaseReport.KBaseReportClient import KBaseReport
+from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.KBaseReportClient import KBaseReport
 
 from jgi_mg_assembly.runner.pipeline import Pipeline
 #END_HEADER
@@ -26,9 +26,9 @@ class jgi_mg_assembly:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.5.5"
-    GIT_URL = "https://github.com/briehl/jgi_mg_assembly"
-    GIT_COMMIT_HASH = "2bd8a5ce33c46ef2d3a6da603ee627e9d02d2082"
+    VERSION = "0.6.0"
+    GIT_URL = "https://github.com/kbaseapps/jgi_mg_assembly.git"
+    GIT_COMMIT_HASH = "ce066964fa7e5f237917ee133edfa56ff904aef8"
 
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block

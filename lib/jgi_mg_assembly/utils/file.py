@@ -7,9 +7,9 @@ Specifically:
 """
 import os
 
-from ReadsUtils.ReadsUtilsClient import ReadsUtils
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
-from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from installed_clients.ReadsUtilsClient import ReadsUtils
+from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 
 
 class FileUtil(object):

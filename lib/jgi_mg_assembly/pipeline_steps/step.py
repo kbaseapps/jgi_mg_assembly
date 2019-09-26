@@ -1,6 +1,6 @@
 from __future__ import print_function
 import subprocess
-from ConfigParser import ConfigParser
+from configparser import ConfigParser  # py3
 import sys
 
 class Step(object):

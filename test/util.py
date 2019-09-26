@@ -8,13 +8,13 @@ import time
 import shutil
 import sys
 from contextlib import contextmanager
-from StringIO import StringIO
+from io import StringIO
 try:
     from ConfigParser import ConfigParser  # py2
 except:
     from configparser import ConfigParser  # py3
-from Workspace.WorkspaceClient import Workspace
-from ReadsUtils.ReadsUtilsClient import ReadsUtils
+from installed_clients.WorkspaceClient import Workspace
+from installed_clients.ReadsUtilsClient import ReadsUtils
 
 ws_name = None
 ws_id = None

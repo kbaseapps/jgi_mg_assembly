@@ -1,10 +1,10 @@
 import os
 import json
 from time import time
-from BBTools.BBToolsClient import BBTools
-from DataFileUtil.DataFileUtilClient import DataFileUtil
+from installed_clients.BBToolsClient import BBTools
+from installed_clients.DataFileUtilClient import DataFileUtil
 from jgi_mg_assembly.utils.util import mkdir
-from step import Step
+from jgi_mg_assembly.pipeline_steps.step import Step
 
 class RQCFilterRunner(Step):
     """

@@ -12,7 +12,7 @@ from __future__ import print_function
 try:
     # baseclient and this client are in a package
     from .baseclient import BaseClient as _BaseClient  # @UnusedImport
-except:
+except ImportError:
     # no they aren't
     from baseclient import BaseClient as _BaseClient  # @Reimport
 
@@ -23,7 +23,7 @@ class jgi_mg_assembly(object):
             self, url=None, timeout=30 * 60, user_id=None,
             password=None, token=None, ignore_authrc=False,
             trust_all_ssl_certificates=False,
-            auth_svc='https://kbase.us/services/authorization/Sessions/Login'):
+            auth_svc='https://ci.kbase.us/services/auth/api/legacy/KBase/Sessions/Login'):
         if url is None:
             raise ValueError('A url is required')
         self._service_ver = None
@@ -74,9 +74,8 @@ class jgi_mg_assembly(object):
            (Should be only Paired-end reads.), parameter "filtered_reads_upa"
            of type "reads_upa" (Should be only Paired-end reads.)
         """
-        return self._client.call_method(
-            'jgi_mg_assembly.run_mg_assembly_pipeline',
-            [params], self._service_ver, context)
+        return self._client.call_method('jgi_mg_assembly.run_mg_assembly_pipeline',
+                                        [params], self._service_ver, context)
 
     def status(self, context=None):
         return self._client.call_method('jgi_mg_assembly.status',
